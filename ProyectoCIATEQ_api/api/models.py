@@ -4,7 +4,7 @@ from django.db import models
 class Employee(models.Model):
     name = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
-    birthdate = models.DateField()
+    birthdate = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=10)
     phone = models.CharField(max_length=15)
     email = models.CharField(max_length=50)
@@ -20,10 +20,9 @@ class Specialty(models.Model):
     name = models.TextField(max_length=100)
 
 class Student(models.Model):
-    expedition = models.DateTimeField()
     name = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
-    birthdate = models.DateField()
+    birthdate = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=10)
     phone = models.CharField(max_length=15)
     email = models.CharField(max_length=50)
@@ -31,6 +30,8 @@ class Student(models.Model):
     city = models.CharField(max_length=50)
     university = models.CharField(max_length=50)
     status = models.BooleanField(default=True)
+    startDate = models.DateField(blank=True, null=True)
+    endDate = models.DateField(blank=True, null=True)
 
 class Unities(models.Model):
     name = models.CharField(max_length=100)
@@ -42,23 +43,23 @@ class Area(models.Model):
 
 class Proyects(models.Model):
     name = models.CharField(max_length=100)
-    startDate = models.DateField()
-    endDate = models.DateField()
+    startDate = models.DateField(blank=True, null=True)
+    endDate = models.DateField(blank=True, null=True)
 
 class Events(models.Model):
     name = models.CharField(max_length=100)
     status = models.BooleanField(default=True)
-    startDate = models.DateField()
-    endDate = models.DateField()
+    startDate = models.DateField(blank=True, null=True)
+    endDate = models.DateField(blank=True, null=True)
 
 class LineInv(models.Model):
     name = models.CharField(max_length=100)
 
 class Articles(models.Model):
     name = models.CharField(max_length=100)
-    date = models.DateField()
+    date = models.DateField(blank=True, null=True)
 
-## Tablas Intermedias ##
+#### Tablas Intermedias ####
 # DetProyect - Hace relación con Empleado y Proyectos
 class DetProyect(models.Model):
     proyect = models.ForeignKey(Proyects, on_delete=models.CASCADE)
@@ -71,7 +72,7 @@ class DetEvent(models.Model):
     events = models.ForeignKey(Events, on_delete=models.CASCADE)
     workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
-    date = models.DateField()
+    date = models.DateField(blank=True, null=True)
 
 # DetLInvestigation - Hace relación con Empleado y LInvestigación
 class DetInvestigation(models.Model):
@@ -79,6 +80,7 @@ class DetInvestigation(models.Model):
     research = models.ForeignKey(LineInv, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
 
+# DetArticle - Hace referencia con Empleado y Articulos
 class DetArticle(models.Model):
     workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
     articles = models.ForeignKey(Articles, on_delete=models.CASCADE)
