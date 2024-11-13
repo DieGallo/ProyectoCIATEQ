@@ -24,5 +24,3 @@
 ### Arquitectura del Software
 Se decide utilizar la arquitectura **MVT** ya que es una de las más populares para utilizar Django con Python para poder desarrollar software. Django al ser compatible con esta arquitectura, nos permite escalar proyectos de forma rápida y eficiente
 ### Diagrama de Clases
-![image](https://github.com/user-attachments/assets/cf5a09d7-cd04-402b-a763-0c78a9069665)
-
