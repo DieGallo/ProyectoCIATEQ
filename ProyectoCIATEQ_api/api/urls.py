@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArtcilesView
+from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView
 
 urlpatterns = [
     # Usamos el endpoint para llamar dicha ruta con la vista de Employees
@@ -23,6 +23,6 @@ urlpatterns = [
     path('events/<int:id>', EventView.as_view(), name='events_process'),
     path('lineinvs/', LineInvView.as_view(), name='lineinvs_list'),
     path('lineinvs/<int:id>', LineInvView.as_view(), name='lineinvs_process'),
-    path('articles/', ArtcilesView.as_view(), name='articles_list'),
-    path('articles/<int:id>', ArtcilesView.as_view(), name='articles_process'),
+    path('articles/', ArticlesView.as_view(), name='articles_list'),
+    path('articles/<int:id>', ArticlesView.as_view(), name='articles_process'),
 ]

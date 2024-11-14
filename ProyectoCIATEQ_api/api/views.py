@@ -232,7 +232,8 @@ class StudentView(View):
                                 email=jd['email'],
                                 address=jd['address'],
                                 city=jd['city'],
-                                university=jd['university'])
+                                university=jd['university'],
+                                startDate=jd['startDate'])
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
@@ -250,6 +251,7 @@ class StudentView(View):
             student.address = jd['address']
             student.city = jd['city']
             student.university = jd['university']
+            student.startDate = jd['startDate']
             student.save()
             datos = {'message': "Success"}
         else:
@@ -403,7 +405,9 @@ class ProyectView(View):
         jd = json.loads(request.body)
 
         # Convertimos en un objeto la variable
-        Proyects.objects.create(name=jd['name'])
+        Proyects.objects.create(name=jd['name'],
+                                startDate=jd['startDate'],
+                                endDate=jd['endDate'])
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
@@ -413,6 +417,8 @@ class ProyectView(View):
         if len(proyects) > 0:
             proyect = Proyects.objects.get(id=id)
             proyect.name = jd['name']
+            proyect.startDate = jd['startDate']
+            proyect.endDate = jd['endDate']
             proyect.save()
             datos = {'message': "Success"}
         else:
@@ -456,7 +462,9 @@ class EventView(View):
         jd = json.loads(request.body)
 
         # Convertimos en un objeto la variable
-        Events.objects.create(name=jd['name'])
+        Events.objects.create(name=jd['name'],
+                                startDate=jd['startDate'],
+                                endDate=jd['endDate'])
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
@@ -466,6 +474,8 @@ class EventView(View):
         if len(events) > 0:
             event = Events.objects.get(id=id)
             event.name = jd['name']
+            event.startDate = jd['startDate']
+            event.endDate = jd['endDate']
             event.save()
             datos = {'message': "Success"}
         else:
@@ -535,7 +545,7 @@ class LineInvView(View):
         return JsonResponse(datos)
 
 ################ API Class Articles ################
-class ArtcilesView(View):
+class ArticlesView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
