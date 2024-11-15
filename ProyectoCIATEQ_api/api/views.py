@@ -1,4 +1,5 @@
 # Usamos ambas librerias para poder usar ambos decoradores con la política csrf
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpRequest, JsonResponse
@@ -6,6 +7,42 @@ from django.http.response import HttpResponse as HttpResponse
 from django.views import View
 from .models import Employee, Area, Articles, Events, LineInv, Proyects, Specialty, Student, Studies, Unities
 import json
+
+# Vista para la ruta de Urls.py de api
+def home(request):
+    listEmployee = Employee.objects.all()
+    return render(request, "main.html", {"employee": listEmployee})
+
+# Vista de registro de empleado
+# Función para hacer un registro, esto se manda desde main.html
+def registrarEmpleado(request):
+    # Se tiene que instanciar cada campo que se va a guardar en la Base de datos y la PK
+    name = request.POST['txtName']
+
+    # Cada campo se tiene que guardar en una variable para hacer una redirección
+    empleado = Employee.objects.create(name=name)
+    return redirect('/')
+
+def edicionEmpleado(request):
+    empleado = Employee.objects.get(id=id)
+
+    return render(request, "edicionEmpleado.html", {"empleado": empleado})
+
+def editarEmpleado(request):
+    # Se tiene que instanciar cada campo que se va a guardar en la Base de datos y la PK
+    name = request.POST['txtName']
+    empleado = Employee.objects.get(id=id)
+    empleado.id = id
+    empleado.name = name
+    empleado.save()
+    return redirect('/')
+
+# El ID es la primary key
+def eliminacionEmpleado(request, id):
+    empleado = Employee.objects.get(id=id)
+    empleado.delete()
+
+    return redirect('/')
 
 ################ API Class Employee ################
 # Declaramos los 4 metodos del CRUD de la API

@@ -1,11 +1,14 @@
 from django.urls import path
 from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView
+from . import views
 
 urlpatterns = [
     # Usamos el endpoint para llamar dicha ruta con la vista de Employees
     # Se convierte el archivo EmployeeView a una vista
     path('employees/', EmployeeView.as_view(), name='employees_list'),
     # Se agrega un int:id para recibir los datos de POST
+
+    # Endpoints del CRUD Back-end.
     path('employees/<int:id>', EmployeeView.as_view(), name='employees_process'),
     path('area/', AreaView.as_view(), name='area_list'),
     path('area/<int:id>', AreaView.as_view(), name='area_process'),
@@ -25,4 +28,10 @@ urlpatterns = [
     path('lineinvs/<int:id>', LineInvView.as_view(), name='lineinvs_process'),
     path('articles/', ArticlesView.as_view(), name='articles_list'),
     path('articles/<int:id>', ArticlesView.as_view(), name='articles_process'),
+
+    # Ruta para los Templates y las vistas
+    path('', views.home),
+    path('registrarEmpleado/', views.registrarEmpleado),
+    path('edicionEmpleado/<id>', views.edicionEmpleado),
+    path('eliminacionEmpleado/<id>', views.eliminacionEmpleado),
 ]

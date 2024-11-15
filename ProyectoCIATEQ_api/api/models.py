@@ -13,12 +13,23 @@ class Employee(models.Model):
     country = models.CharField(max_length=50)
     status = models.BooleanField(default=True)
 
+    # Función para mostrar el dato guardado en Django Admin
+    def __str__(self):
+        texto = "{0} {1}, ({2})"
+        return texto.format(self.name, self.lastName, self.email)
+
 class Studies(models.Model):
     description =  models.CharField(max_length=400)
 
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.description)
 class Specialty(models.Model):
     name = models.TextField(max_length=100)
 
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.name)
 class Student(models.Model):
     name = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
@@ -33,18 +44,34 @@ class Student(models.Model):
     startDate = models.DateField(blank=True, null=True)
     endDate = models.DateField(blank=True, null=True)
 
+    def __str__(self):
+        texto = "{0} {1}, ({2})"
+        return texto.format(self.name, self.lastName, self.university)
+
 class Unities(models.Model):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=50)
 
+    def __str__(self):
+        texto = "{0} - {1}"
+        return texto.format(self.name, self.address)
+
 class Area(models.Model):
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.name)
 
 class Proyects(models.Model):
     name = models.CharField(max_length=100)
     startDate = models.DateField(blank=True, null=True)
     endDate = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.name)
 
 class Events(models.Model):
     name = models.CharField(max_length=100)
@@ -52,12 +79,23 @@ class Events(models.Model):
     startDate = models.DateField(blank=True, null=True)
     endDate = models.DateField(blank=True, null=True)
 
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.name)
 class LineInv(models.Model):
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        texto = "{0}"
+        return texto.format(self.name)
 
 class Articles(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        texto = "{0} - {1}"
+        return texto.format(self.name, self.date)
 
 #### Tablas Intermedias ####
 # DetProyect - Hace relación con Empleado y Proyectos
