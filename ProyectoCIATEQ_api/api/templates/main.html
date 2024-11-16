@@ -7,49 +7,37 @@
 <!-- Todo contenido que se ponga dentro de estas etiquetas se va a reemplazar de la plantilla base.html -->
 <div class="row">
     <div class="col-sm-12 col-md-6 col-lg-4 col-xl-4">
-        <h2>Gestión de Empleados</h2>
-        <div class="card">
-            <div class="card-body">
-              <form action="/registrarEmpleado/" method="POST">{% csrf_token %}
-                <div class="form-group">
-                    <input type="text" id="txtName" name="txtName" class="form-control" placeholder="Tú nombre" minlength="6" maxlength="6" required>
-                </div>
-                <div class="form-group">
-                    <button class="btn-success btn btn-block text-white" type="submit">Guardar</button>
-                </div>
-              </form>
-            </div>
+        <h2>Listado de Empleado</h2>
+
         </div>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-8 col-xl-8">
-        <h1>Listado de Empleados</h1>
-        <div class="table-responsive py-2">
-            <table class="table table-striped">
-                <thead class="thead-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Celular</th>
-                        <th>Email</th>
-                        <th colspan="2">Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for e in employee %}
-                    <tr>
-                        <td>{{forloop.counter}}</td>
-                        <td>{{e.name}}</td>
-                        <td>{{e.lastName}}</td>
-                        <td>{{e.phone}}</td>
-                        <td>{{e.email}}</td>
-                        <td><a href="edicionEmpleado/{{e.id}}" class="btn btn-info">Editar</a></td>
-                        <td><a href="eliminacionEmpleado/{{e.id}}" class="btn btn-danger">Eliminar</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Apellido</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col">Email</th>
+            <th scope="col">Área</th>
+            <th scope="col">Nivel de estudios</th>
+            <th scope="col">Ciudad</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+            <tr>
+                <th scope="row">{{employee.id}}</th>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.lastName }}</td>
+                <td>{{ employee.phone }}</td>
+                <td>{{ employee.email }}</td>
+                <td>{{ employee.area.name }}</td>
+                <td>{{ employee.studies.description }}</td>
+                <td>{{ employee.city }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
 </div>
 {% endblock %}

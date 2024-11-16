@@ -19,9 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path necesario para aceptar las peticiones de nuestra aplicación llamada "api"
-    path('api/', include('api.urls')),
-
     # Rutas de los Templates
     # Declaramos la ruta donde se encuentra el archivo de urls de la app (api)
     path('', include('api.urls'))

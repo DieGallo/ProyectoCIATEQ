@@ -1,4 +1,9 @@
-th, td {
+th,
+td {
     text-align: center;
     vertical-align: middle;
+}
+
+.ciateq {
+    background-color: #C8102E;
 }
