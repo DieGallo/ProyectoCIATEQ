@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from api.views import EmployeeView, StudiesView, SpecialtyView, StudentView, UnitiesView, AreaView, ProyectView, EventView, LineInvView, ArticlesView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Rutas de los Templates
     # Declaramos la ruta donde se encuentra el archivo de urls de la app (api)
-    path('', include('api.urls'))
+    path('', include('api.urls')),
 ]

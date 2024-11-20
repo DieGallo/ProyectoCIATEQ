@@ -5,5 +5,9 @@ td {
 }
 
 .ciateq {
-    background-color: #C8102E;
+    background-color: #CC0000;
+}
+
+.text-align{
+    text-align: right;
 }

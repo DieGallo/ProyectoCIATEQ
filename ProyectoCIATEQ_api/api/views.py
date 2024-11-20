@@ -1,8 +1,9 @@
 # Usamos ambas librerias para poder usar ambos decoradores con la política csrf
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpRequest, JsonResponse
+from django.views.generic.base import RedirectView
+from django.http import JsonResponse
 from django.http.response import HttpResponse as HttpResponse
 from django.views import View
 from .models import Employee, Area, Articles, Events, LineInv, Proyects, Specialty, Student, Studies, Unities
@@ -10,15 +11,11 @@ import json
 
 # Vista para la ruta de Urls.py de api
 def home(request):
-    return render(request, "base.html")
-
-def employee(request):
-    employees = Employee.objects.all()
-    return render(request, "employee.html", {"employee": employees})
+    return render(request, "home.html")
 
 ################ API Class Employee ################----
 # Declaramos los 4 metodos del CRUD de la API
-class EmployeeView(View):
+class EmployeeView(RedirectView):
     # Evita la falsicicación de datos acuerdo a CSRF
     # Evita el error 403 Forbidden
     @method_decorator(csrf_exempt)
@@ -28,28 +25,14 @@ class EmployeeView(View):
     # Devuelve la información de la tabla de datos
     ## Parámetro ID personalizada cada ID para traer los datos de cada empleado
     def get(self, request, id = 0):
-
+        employees = Employee.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
-        if(id > 0):
-            employees = list(Employee.objects.filter(id=id).values())
-            if len(employees) > 0:
-                employee = employees[0]
-                datos = {'message': "Success", 'employees': employee}
-            else:
-                datos = {'message': "No one employee found it."}
-            return JsonResponse(datos)
-        else:
-            # Guardamos en una variable el modelo de Employees
-            employees = list(Employee.objects.values()) # Se crea con list() para que se pueda serializar
-            # Condificón para determinar si tiene algún dato la tabla
-            if len(employees) > 0:
-                datos = {'message': "Success", 'employees': employees}
-            else:
-                datos = {'message': "No one employee found it."}
+        context = {
+            'employees': employees
+        }
 
-            # Devuelve los datos en formato JSON
-            return JsonResponse(datos)
+        return render(request, 'employee.html', context)
 
     # Se suben datos a la tabla de nuestra Base de datos
     def post(self, request):
@@ -251,21 +234,14 @@ class StudentView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        if(id > 0):
-            students = list(Student.objects.filter(id=id).values())
-            if len(students) > 0:
-                student = students[0]
-                datos = {'message': "Success", 'students': student}
-            else:
-                datos = {'message': "ID does not exist yet."}
-            return JsonResponse(datos)
-        else:
-            students = list(Student.objects.values())
-            if len(students) > 0:
-                datos = {'message': "Success", 'students': students}
-            else:
-                datos = {'message': "There is not data yet."}
-            return JsonResponse(datos)
+        students = Student.objects.all()
+        # Condicionales para determinar si se tienen empleados
+        ## Lee solamente un sólo empleado
+        context = {
+            'students': students
+        }
+
+        return render(request, 'students.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
@@ -471,21 +447,14 @@ class ProyectView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        if(id > 0):
-            proyects = list(Proyects.objects.filter(id=id).values())
-            if len(proyects) > 0:
-                proyect = proyects[0]
-                datos = {'message': "Success", 'proyects': proyect}
-            else:
-                datos = {'message': "It does not to save data."}
-            return JsonResponse(datos)
-        else:
-            proyects = list(Proyects.objects.values())
-            if len(proyects) > 0:
-                datos = {'message': "Success", 'proyects': proyects}
-            else:
-                datos = {'message': "It does not to save data."}
-            return JsonResponse(datos)
+        proyects = Proyects.objects.all()
+        # Condicionales para determinar si se tienen empleados
+        ## Lee solamente un sólo empleado
+        context = {
+            'proyects': proyects
+        }
+
+        return render(request, 'proyects.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
@@ -528,21 +497,14 @@ class EventView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        if(id > 0):
-            events = list(Events.objects.filter(id=id).values())
-            if len(events) > 0:
-                event = events[0]
-                datos = {'message': "Success", 'events': event}
-            else:
-                datos = {'message': "It does not to save data."}
-            return JsonResponse(datos)
-        else:
-            events = list(Events.objects.values())
-            if len(events) > 0:
-                datos = {'message': "Success", 'events': events}
-            else:
-                datos = {'message': "It does not to save data."}
-            return JsonResponse(datos)
+        events = Events.objects.all()
+        # Condicionales para determinar si se tienen empleados
+        ## Lee solamente un sólo empleado
+        context = {
+            'events': events
+        }
+
+        return render(request, 'events.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
