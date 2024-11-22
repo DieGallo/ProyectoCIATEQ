@@ -1,6 +1,6 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView
+from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView, submitEmployeeView
 from . import views
 
 urlpatterns = [
@@ -8,14 +8,10 @@ urlpatterns = [
     # Usamos el endpoint para llamar dicha ruta con la vista de Employees
     # Se convierte el archivo EmployeeView a una vista
     path('employees/', EmployeeView.as_view(), name='employees_list'),
+    path('employees/', submitEmployeeView.as_view(), name='employees_list'),
     # Se agrega un int:id para recibir los datos de POST
     # Endpoints del CRUD Back-end.
     path('employees/<int:id>', EmployeeView.as_view(), name='employees_process'),
-
-    # URL para el CRUD de Empleados
-    #path('addEmployee/', addEmployeeView.as_view(), name='add_employee'),
-    path('editEmployee/', EmployeeView.as_view(), name='edit_employee'),
-    path('delEmployee/', EmployeeView.as_view(), name='delete_employee'),
 
     path('area/', AreaView.as_view(), name='area_list'),
     path('area/<int:id>', AreaView.as_view(), name='area_process'),

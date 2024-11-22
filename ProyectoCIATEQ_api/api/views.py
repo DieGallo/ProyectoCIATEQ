@@ -29,19 +29,22 @@ class EmployeeView(View):
     ## Parámetro ID personalizada cada ID para traer los datos de cada empleado
     def get(self, request, id = 0):
         employees = Employee.objects.all()
+        # Cuando se tienen FK se tienen que instaciar los datos en get para los combobox
+        area = Area.objects.all()
+        studies = Studies.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'employees': employees
+            'employees': employees,
+            'areas': area,
+            'studies': studies
         }
-
         return render(request, 'employee.html', context)
 
+class submitEmployeeView(View):
     # Se suben datos a la tabla de nuestra Base de datos
     def post(self, request):
-        # print(request.body)
-        jd = json.loads(request.body)
-
+        jd = request.POST
         # Try-Catch para hacer un llamado de las Foreigns Key de otras tablas.
         try:
             # Instanciamos cada tabla Foránea que tengamos.
@@ -64,8 +67,8 @@ class EmployeeView(View):
                                 city=jd['city'],
                                 country=jd['country'],
                                 startDate=jd['startDate'],
-                                area_id=area.id,
-                                studies_id=studies.id)
+                                area_id=area,
+                                studies_id=studies)
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
