@@ -3,7 +3,7 @@
     <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
         <div class="flex">
             <div class="w-1/2 text-left ">
-                <h3 class="text-3xl font-bold dark:text-white py-2">Eventos</h3>
+                <h3 class="text-3xl font-bold dark:text-white py-2">Tipo de Estudios</h3>
             </div>
             {% include 'navigation.html' %}
         </div>
@@ -15,25 +15,16 @@
                         <tr>
                             <th scope="col" class="p-4">
                             </th>
-                            <th scope="col" class="px-6 py-4">
-                                Nombre del Evento
+                            <th scope="col" class="px-6 py-3">
+                                Nivel
                             </th>
-                            <th scope="col" class="px-6 py-4">
-                                Fecha de Inicio
-                            </th>
-                            <th scope="col" class="px-6 py-4">
-                                Fecha Final
-                            </th>
-                            <th scope="col" class="px-6 py-4">
-                                Lugar
-                            </th>
-                            <th scope="col" class="px-6 py-4">
-                                Tipo de Evento
+                            <th scope="col" class="px-6 py-3">
+                                Especialidades
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for event in events %}
+                        {% for studies in studies %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <td class="w-4 p-4">
                                 <div class="flex items-center">
@@ -42,27 +33,18 @@
                                 </div>
                             </td>
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ event.name }}
+                                {{ studies.name }}
                             </th>
-                            <td class="px-6 py-4">
-                                {{ event.startDate }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ event.endDate }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ event.place }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ event.typeEvent.name }}
-                            </td>
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{ studies.specialty.name }}
+                            </th>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             </div>
-            <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
+            <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700">
             <nav aria-label="Page navigation example">
                 <ul class="flex items-center -space-x-px h-8 text-sm justify-center">
                 <li>
@@ -98,6 +80,7 @@
                 </li>
                 </ul>
             </nav>
+            <hr class="h-px my-5 bg-gray-200 border-0 dark:bg-gray-700">
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>

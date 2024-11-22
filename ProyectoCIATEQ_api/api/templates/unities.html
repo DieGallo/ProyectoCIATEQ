@@ -3,7 +3,7 @@
     <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
         <div class="flex">
             <div class="w-1/2 text-left ">
-                <h3 class="text-3xl font-bold dark:text-white py-2">Eventos</h3>
+                <h3 class="text-3xl font-bold dark:text-white py-2">Unidades</h3>
             </div>
             {% include 'navigation.html' %}
         </div>
@@ -16,24 +16,24 @@
                             <th scope="col" class="p-4">
                             </th>
                             <th scope="col" class="px-6 py-4">
-                                Nombre del Evento
+                                Nombre Planta
                             </th>
                             <th scope="col" class="px-6 py-4">
-                                Fecha de Inicio
+                                Director
                             </th>
                             <th scope="col" class="px-6 py-4">
-                                Fecha Final
+                                Teléfono
                             </th>
                             <th scope="col" class="px-6 py-4">
-                                Lugar
+                                Dirección
                             </th>
                             <th scope="col" class="px-6 py-4">
-                                Tipo de Evento
+                                Ciudad
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for event in events %}
+                        {% for unities in unities %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <td class="w-4 p-4">
                                 <div class="flex items-center">
@@ -42,19 +42,19 @@
                                 </div>
                             </td>
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ event.name }}
+                                {{ unities.name }}
                             </th>
                             <td class="px-6 py-4">
-                                {{ event.startDate }}
+                                {{ unities.name }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ event.endDate }}
+                                {{ unities.phone }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ event.place }}
+                                {{ unities.address }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ event.typeEvent.name }}
+                                {{ unities.city }}
                             </td>
                         </tr>
                         {% endfor %}

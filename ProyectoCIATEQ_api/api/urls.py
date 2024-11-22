@@ -1,6 +1,6 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView
+from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView
 from . import views
 
 urlpatterns = [
@@ -11,6 +11,12 @@ urlpatterns = [
     # Se agrega un int:id para recibir los datos de POST
     # Endpoints del CRUD Back-end.
     path('employees/<int:id>', EmployeeView.as_view(), name='employees_process'),
+
+    # URL para el CRUD de Empleados
+    #path('addEmployee/', addEmployeeView.as_view(), name='add_employee'),
+    path('editEmployee/', EmployeeView.as_view(), name='edit_employee'),
+    path('delEmployee/', EmployeeView.as_view(), name='delete_employee'),
+
     path('area/', AreaView.as_view(), name='area_list'),
     path('area/<int:id>', AreaView.as_view(), name='area_process'),
     path('studies/', StudiesView.as_view(), name='studies_list'),
@@ -29,4 +35,14 @@ urlpatterns = [
     path('lineinvs/<int:id>', LineInvView.as_view(), name='lineinvs_process'),
     path('articles/', ArticlesView.as_view(), name='articles_list'),
     path('articles/<int:id>', ArticlesView.as_view(), name='articles_process'),
+
+    # URLs de tablas intermedias
+    path('typeEvent/', TypeEventView.as_view(), name='typeEvent_list'),
+    path('typeEvent/<int:id>', TypeEventView.as_view(), name='typeEvent_process'),
+
+    path('typeProyect/', TypeProyectView.as_view(), name='typeProyect_list'),
+    path('typeProyect/<int:id>', TypeProyectView.as_view(), name='typeProyect_process'),
+
+    path('category/', CategoriesView.as_view(), name='category_list'),
+    path('category/<int:id>', CategoriesView.as_view(), name='category_process'),
 ]
