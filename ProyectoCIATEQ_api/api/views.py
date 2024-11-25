@@ -13,12 +13,10 @@ import json
 def home(request):
     return render(request, "home.html")
 
-def form(request):
-    return render(request, "addEmployee.html")
-
 ################ API Class Employee ################////
 # Declaramos los 4 metodos del CRUD de la API
 class EmployeeView(View):
+
     # Evita la falsicicación de datos acuerdo a CSRF
     # Evita el error 403 Forbidden
     @method_decorator(csrf_exempt)
@@ -29,28 +27,37 @@ class EmployeeView(View):
     ## Parámetro ID personalizada cada ID para traer los datos de cada empleado
     def get(self, request, id = 0):
         employees = Employee.objects.all()
+
         # Cuando se tienen FK se tienen que instaciar los datos en get para los combobox
         area = Area.objects.all()
         studies = Studies.objects.all()
+
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'employees': employees,
+
+            # Traemos los datos de las FK
+            # Cuando se recarge la página el dato aparezca los combobox
             'areas': area,
-            'studies': studies
+            'studies': studies,
         }
+
+        # Retornamos la vista principal de la Tabla.
         return render(request, 'employee.html', context)
 
-class submitEmployeeView(View):
     # Se suben datos a la tabla de nuestra Base de datos
     def post(self, request):
         jd = request.POST
+
         # Try-Catch para hacer un llamado de las Foreigns Key de otras tablas.
         try:
+
             # Instanciamos cada tabla Foránea que tengamos.
             area = Area.objects.get(id=jd['area_id'])
             studies = Studies.objects.get(id=jd['studies_id'])
         except (Area.DoesNotExist, Studies.DoesNotExist):
+
             # Retornamos una alerta por si da error.
             return JsonResponse({'message': "Area or Studies not found"}, status=404)
 
@@ -67,19 +74,24 @@ class submitEmployeeView(View):
                                 city=jd['city'],
                                 country=jd['country'],
                                 startDate=jd['startDate'],
-                                area_id=area,
-                                studies_id=studies)
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+                                area_id=area.id,
+                                studies_id=studies.id)
+
+        # Redireccionamos a la vista que toma la función del GET
+        return redirect('/employees/')
 
     # Modifica algún campo o tabla de nuestra Base de datos
     def put(self, request, id):
+
         # Tomamos el cuerpo de nuestros datos y lo pasamos a una variable, estos datos ya están guardados por el POST
         jd = json.loads(request.body)
+
         # Guardamos en una variable toda la Instancia de la tabla.
         employees = list(Employee.objects.filter(id=id).values())
+
         # Condición para actualizar cada uno de los datos del modelo de la tabla Employee
         if len(employees) > 0:
+
             # Ingresamos cada campo de la tabla para que se pueda actualizar.
             employee = Employee.objects.get(id=id)
             employee.name = jd['name']
@@ -99,29 +111,23 @@ class submitEmployeeView(View):
             # Condicional para determinar si existen valores en las llaves foráneas.
             if area_id and studies_id is not None:
                 try:
+
                     # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
                     area = Area.objects.get(id=jd['area_id'])
                     studies = Studies.objects.get(id=jd['studies_id'])
                     employee.area = area
                     employee.studies = studies
-                except Area.DoesNotExist or Studies.DoesNotExist:
+                except (Area.DoesNotExist or Studies.DoesNotExist):
                     return JsonResponse({'message': "Area or Studies not found"}, status=404)
 
             employee.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "No one employee found it for editing."}
-        return JsonResponse(datos)
+            return redirect('/employees/')
 
     # Elimina algún campo que contenga la Base de datos
     def delete(self, request, id):
-        employees = list(Employee.objects.filter(id=id).values())
-        if len(employees) > 0:
-            Employee.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "No one employee found it to delete."}
-        return JsonResponse(datos)
+        employee = get_object_or_404(Employee, id=id)
+        employee.delete()
+        return redirect('/employees/')
 
 ################ API Class Studies #################////
 class StudiesView(View):

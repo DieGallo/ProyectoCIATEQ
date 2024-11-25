@@ -1,17 +1,20 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView, submitEmployeeView
+from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView
 from . import views
 
 urlpatterns = [
+    # URL DE LA BIENVENIDA DEL SISTEMA
     path('', views.home, name='home'),
+
     # Usamos el endpoint para llamar dicha ruta con la vista de Employees
     # Se convierte el archivo EmployeeView a una vista
+    # ESTA URL REDIRIJE Y ACTUALIZA LOS DATOS CUANDO SE AGREGA UN EMPLEADO.
     path('employees/', EmployeeView.as_view(), name='employees_list'),
-    path('employees/', submitEmployeeView.as_view(), name='employees_list'),
+
     # Se agrega un int:id para recibir los datos de POST
     # Endpoints del CRUD Back-end.
-    path('employees/<int:id>', EmployeeView.as_view(), name='employees_process'),
+    path('employees/edit/<int:id>/', EmployeeView.as_view(), name='employees_process'),
 
     path('area/', AreaView.as_view(), name='area_list'),
     path('area/<int:id>', AreaView.as_view(), name='area_process'),
