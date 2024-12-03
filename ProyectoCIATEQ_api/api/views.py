@@ -8,6 +8,9 @@ from django.http.response import HttpResponse as HttpResponse
 from django.views import View
 from .models import Employee, Area, Articles, Events, LineInv, Proyects, Specialty, Student, Studies, Unities, DetArticle, DetEvent, DetInvestigation, DetProyect, TypeEvent, TypeProyect, Categories
 import json
+from django.views.generic.edit import DeleteView
+from django.urls import reverse_lazy
+from .forms import EmployeeForm
 
 # Vista para la ruta de Urls.py de api
 def home(request):
@@ -44,7 +47,7 @@ class EmployeeView(View):
         }
 
         # Retornamos la vista principal de la Tabla.
-        return render(request, 'employee.html', context)
+        return render(request, 'employees/employee.html', context)
 
     # Se suben datos a la tabla de nuestra Base de datos
     def post(self, request):
@@ -84,7 +87,7 @@ class EmployeeView(View):
     def put(self, request, id):
 
         # Tomamos el cuerpo de nuestros datos y lo pasamos a una variable, estos datos ya están guardados por el POST
-        jd = json.loads(request.body)
+        jd = request.PUT
 
         # Guardamos en una variable toda la Instancia de la tabla.
         employees = list(Employee.objects.filter(id=id).values())
@@ -117,17 +120,18 @@ class EmployeeView(View):
                     studies = Studies.objects.get(id=jd['studies_id'])
                     employee.area = area
                     employee.studies = studies
-                except (Area.DoesNotExist or Studies.DoesNotExist):
+                except (Area.DoesNotExist, Studies.DoesNotExist):
                     return JsonResponse({'message': "Area or Studies not found"}, status=404)
 
             employee.save()
-            return redirect('/employees/')
-
-    # Elimina algún campo que contenga la Base de datos
-    def delete(self, request, id):
-        employee = get_object_or_404(Employee, id=id)
-        employee.delete()
         return redirect('/employees/')
+
+class EmployeeDeleteView(DeleteView):
+    model = Employee
+    employees = Employee.objects.all()
+    success_url = reverse_lazy('employees_list')
+    template_name = 'employees/employee.html'
+
 
 ################ API Class Studies #################////
 class StudiesView(View):
@@ -161,7 +165,7 @@ class StudiesView(View):
         return JsonResponse(datos)
 
     def put(self, request, id):
-        jd = json.loads(request.body)
+        jd = request.PUT
         studies = list(Studies.objects.filter(id=id).values())
         if len(studies) > 0:
             study = Studies.objects.get(id=id)
@@ -177,10 +181,7 @@ class StudiesView(View):
                 except Specialty.DoesNotExist:
                     return JsonResponse({'message': "Specialty not found"}, status=404)
             study.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an study to save."}
-        return JsonResponse(datos)
+        return redirect('/specialty/')
 
     def delete(self, request, id):
         studies = list(Studies.objects.filter(id=id).values())
@@ -199,43 +200,38 @@ class SpecialtyView(View):
 
     def get(self, request, id = 0):
         specialties = Specialty.objects.all()
+        specialtiesPUT = None
+        if id != 0:
+            specialty = Specialty.objects.filter(id=id).first()
+
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'specialties': specialties
+            'specialties': specialties,
+            'specialtiesPUT': specialtiesPUT
         }
 
-        return render(request, 'specialty.html', context)
+        return render(request, 'specialties/specialty.html', context)
 
     def post(self, request):
-        # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        name = request.POST.get('name')
+        Specialty.objects.create(name=name)
+        return redirect('/specialty/')
 
-        # Convertimos en un objeto la variable
-        Specialty.objects.create(name=jd['name'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        specialties = list(Specialty.objects.filter(id=id).values())
-        if len(specialties) > 0:
-            specialty = Specialty.objects.get(id=id)
-            specialty.name = jd['name']
+        specialty = get_object_or_404(Specialty, id=id)
+        name = request.POST.get('name')
+        if name:
+            specialty.name = name
             specialty.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an specialty to save."}
-        return JsonResponse(datos)
+        return redirect('/specialty/')
 
-    def delete(self, request, id):
-        specialties = list(Specialty.objects.filter(id=id).values())
-        if len(specialties) > 0:
-            Specialty.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an specialty to save."}
-        return JsonResponse(datos)
+class SpecialtyDeleteView(DeleteView):
+    model = Specialty
+    specialties = Specialty.objects.all()
+    success_url = reverse_lazy('specialty_list')
+    template_name = 'specialties/specialty.html'
 
 ################ API Class Student ################////
 class StudentView(View):
@@ -245,17 +241,19 @@ class StudentView(View):
 
     def get(self, request, id = 0):
         students = Student.objects.all()
+        studies = Studies.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'students': students
+            'students': students,
+            'studies': studies,
         }
 
-        return render(request, 'students.html', context)
+        return render(request, 'students/students.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        jd = request.POST
 
         try:
             studies = Studies.objects.get(id=jd['studies_id'])
@@ -275,40 +273,39 @@ class StudentView(View):
                                 typeStudent=jd['typeStudent'],
                                 startDate=jd['startDate'],
                                 studies_id=studies.id)
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return redirect('/students/')
 
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        students = list(Student.objects.filter(id=id).values())
-        if len(students) > 0:
-            student = Student.objects.get(id=id)
-            student.name = jd['name']
-            student.lastName = jd['lastName']
-            student.birthdate = jd['birthdate']
-            student.sex = jd['sex']
-            student.phone = jd['phone']
-            student.email = jd['email']
-            student.address = jd['address']
-            student.city = jd['city']
-            student.university = jd['university']
-            student.typeStudent = jd['typeStudent']
-            student.startDate = jd['startDate']
-            studies_id = jd.get('studies_id')
+    # def put(self, request, id):
+    #     jd = json.loads(request.body)
+    #     students = list(Student.objects.filter(id=id).values())
+    #     if len(students) > 0:
+    #         student = Student.objects.get(id=id)
+    #         student.name = jd['name']
+    #         student.lastName = jd['lastName']
+    #         student.birthdate = jd['birthdate']
+    #         student.sex = jd['sex']
+    #         student.phone = jd['phone']
+    #         student.email = jd['email']
+    #         student.address = jd['address']
+    #         student.city = jd['city']
+    #         student.university = jd['university']
+    #         student.typeStudent = jd['typeStudent']
+    #         student.startDate = jd['startDate']
+    #         studies_id = jd.get('studies_id')
 
-            if studies_id is not None:
-                try:
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    studies = Studies.objects.get(id=jd['studies_id'])
-                    student.studies = studies
-                except Unities.DoesNotExist:
-                    return JsonResponse({'message': "Studies not found"}, status=404)
+    #         if studies_id is not None:
+    #             try:
+    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
+    #                 studies = Studies.objects.get(id=jd['studies_id'])
+    #                 student.studies = studies
+    #             except Unities.DoesNotExist:
+    #                 return JsonResponse({'message': "Studies not found"}, status=404)
 
-            student.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an student to change."}
-        return JsonResponse(datos)
+    #         student.save()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an student to change."}
+    #     return JsonResponse(datos)
 
     def delete(self, request, id):
         students = list(Student.objects.filter(id=id).values())
@@ -381,17 +378,19 @@ class AreaView(View):
 
     def get(self, request, id = 0):
         areas = Area.objects.all()
+        unities = Unities.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'areas': areas
+            'areas': areas,
+            'unities': unities,
         }
 
-        return render(request, 'areas.html', context)
+        return render(request, 'areas/areas.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        jd = request.POST
 
         # Try-Catch para filtrar los IDs de la tabla
         # Buscamos la instancia de unities
@@ -406,33 +405,32 @@ class AreaView(View):
         Area.objects.create(principal=jd['principal'],
                             name=jd['name'],
                             unities_id=unities.id)
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return redirect('/areas/')
 
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        areas = list(Area.objects.filter(id=id).values())
-        if len(areas) > 0:
-            area = Area.objects.get(id=id)
-            area.principal = jd.get('principal', area.principal)
-            area.name = jd.get('name', area.name)  # Usar el nombre proporcionado o mantener el actual
-            # Cada FK de cada tabla se instancia de la siguiente manera.
-            unities_id = jd.get('unities_id')
+    # def put(self, request, id):
+    #     jd = json.loads(request.body)
+    #     areas = list(Area.objects.filter(id=id).values())
+    #     if len(areas) > 0:
+    #         area = Area.objects.get(id=id)
+    #         area.principal = jd.get('principal', area.principal)
+    #         area.name = jd.get('name', area.name)  # Usar el nombre proporcionado o mantener el actual
+    #         # Cada FK de cada tabla se instancia de la siguiente manera.
+    #         unities_id = jd.get('unities_id')
 
-            # Condicional con Try-Catch para verificar si la variable tiene contenido
-            if unities_id is not None:
-                try:
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    unities = Unities.objects.get(id=unities_id)
-                    area.unities = unities
-                except Unities.DoesNotExist:
-                    return JsonResponse({'message': "Unities not found"}, status=404)
+    #         # Condicional con Try-Catch para verificar si la variable tiene contenido
+    #         if unities_id is not None:
+    #             try:
+    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
+    #                 unities = Unities.objects.get(id=unities_id)
+    #                 area.unities = unities
+    #             except Unities.DoesNotExist:
+    #                 return JsonResponse({'message': "Unities not found"}, status=404)
 
-            area.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an area to save."}
-        return JsonResponse(datos)
+    #         area.save()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an area to save."}
+    #     return JsonResponse(datos)
 
     def delete(self, request, id = 0):
         areas = list(Area.objects.filter(id=id).values())
@@ -451,17 +449,19 @@ class ProyectView(View):
 
     def get(self, request, id = 0):
         proyects = Proyects.objects.all()
+        typeP = TypeProyect.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'proyects': proyects
+            'proyects': proyects,
+            'typeProyect': typeP,
         }
 
-        return render(request, 'proyects.html', context)
+        return render(request, 'proyects/proyects.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        jd = request.POST
 
         try:
             typeProyect = TypeProyect.objects.get(id=jd['typeProyect_id'])
@@ -475,34 +475,33 @@ class ProyectView(View):
                                 areaKnowledge=jd['areaKnowledge'],
                                 place=jd['place'],
                                 typeProyect_id=typeProyect.id)
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return redirect('/proyects/')
 
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        proyects = list(Proyects.objects.filter(id=id).values())
-        if len(proyects) > 0:
-            proyect = Proyects.objects.get(id=id)
-            proyect.name = jd['name']
-            proyect.startDate = jd['startDate']
-            proyect.endDate = jd['endDate']
-            proyect.areaKnowledge = jd['areaKnowledge']
-            proyect.place = jd['place']
-            typeProyect_id = jd.get('typeProyect_id')
+    # def put(self, request, id):
+    #     jd = json.loads(request.body)
+    #     proyects = list(Proyects.objects.filter(id=id).values())
+    #     if len(proyects) > 0:
+    #         proyect = Proyects.objects.get(id=id)
+    #         proyect.name = jd['name']
+    #         proyect.startDate = jd['startDate']
+    #         proyect.endDate = jd['endDate']
+    #         proyect.areaKnowledge = jd['areaKnowledge']
+    #         proyect.place = jd['place']
+    #         typeProyect_id = jd.get('typeProyect_id')
 
-            if typeProyect_id is not None:
-                try:
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    typeProyect = TypeProyect.objects.get(id=jd['typeProyect_id'])
-                    proyect.typeProyect = typeProyect
-                except TypeProyect.DoesNotExist:
-                    return JsonResponse({'message': "TypeProyect not found"}, status=404)
+    #         if typeProyect_id is not None:
+    #             try:
+    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
+    #                 typeProyect = TypeProyect.objects.get(id=jd['typeProyect_id'])
+    #                 proyect.typeProyect = typeProyect
+    #             except TypeProyect.DoesNotExist:
+    #                 return JsonResponse({'message': "TypeProyect not found"}, status=404)
 
-            proyect.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an proyect to save."}
-        return JsonResponse(datos)
+    #         proyect.save()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an proyect to save."}
+    #     return JsonResponse(datos)
 
     def delete(self, request, id = 0):
         proyects = list(Proyects.objects.filter(id=id).values())
@@ -521,17 +520,19 @@ class EventView(View):
 
     def get(self, request, id = 0):
         events = Events.objects.all()
+        typeE = TypeEvent.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'events': events
+            'events': events,
+            'typeEvent': typeE,
         }
 
-        return render(request, 'events.html', context)
+        return render(request, 'events/events.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        jd = request.POST
 
         try:
             typeEvent = TypeEvent.objects.get(id=jd['typeEvent_id'])
@@ -544,33 +545,32 @@ class EventView(View):
                                 endDate=jd['endDate'],
                                 place=jd['place'],
                                 typeEvent_id=typeEvent.id)
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return redirect('/events/')
 
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        events = list(Events.objects.filter(id=id).values())
-        if len(events) > 0:
-            event = Events.objects.get(id=id)
-            event.name = jd['name']
-            event.startDate = jd['startDate']
-            event.endDate = jd['endDate']
-            event.place = jd['place']
-            typeEvent_id = jd.get('typeEvent_id')
+    # def put(self, request, id):
+    #     jd = json.loads(request.body)
+    #     events = list(Events.objects.filter(id=id).values())
+    #     if len(events) > 0:
+    #         event = Events.objects.get(id=id)
+    #         event.name = jd['name']
+    #         event.startDate = jd['startDate']
+    #         event.endDate = jd['endDate']
+    #         event.place = jd['place']
+    #         typeEvent_id = jd.get('typeEvent_id')
 
-            if typeEvent_id is not None:
-                try:
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    typeEvent = TypeEvent.objects.get(id=jd['typeEvent_id'])
-                    event.typeEvent = typeEvent
-                except TypeEvent.DoesNotExist:
-                    return JsonResponse({'message': "TypeEvent not found"}, status=404)
+    #         if typeEvent_id is not None:
+    #             try:
+    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
+    #                 typeEvent = TypeEvent.objects.get(id=jd['typeEvent_id'])
+    #                 event.typeEvent = typeEvent
+    #             except TypeEvent.DoesNotExist:
+    #                 return JsonResponse({'message': "TypeEvent not found"}, status=404)
 
-            event.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an event to save."}
-        return JsonResponse(datos)
+    #         event.save()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an event to save."}
+    #     return JsonResponse(datos)
 
     def delete(self, request, id = 0):
         events = list(Events.objects.filter(id=id).values())
@@ -595,16 +595,15 @@ class LineInvView(View):
             'lineinvs': lineinvs
         }
 
-        return render(request, 'lineinvs.html', context)
+        return render(request, 'lineinvs/lineinvs.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        jd = request.POST
 
         # Convertimos en un objeto la variable
         LineInv.objects.create(name=jd['name'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return redirect('/lineinvs/')
 
     def put(self, request, id):
         jd = json.loads(request.body)

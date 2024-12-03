@@ -1,6 +1,6 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView
+from .views import EmployeeView, AreaView, StudiesView, SpecialtyView, StudentView, UnitiesView, ProyectView, EventView, LineInvView, ArticlesView, DetArticleView, TypeProyectView, TypeEventView, CategoriesView, EmployeeDeleteView, SpecialtyDeleteView
 from . import views
 
 urlpatterns = [
@@ -14,24 +14,35 @@ urlpatterns = [
 
     # Se agrega un int:id para recibir los datos de POST
     # Endpoints del CRUD Back-end.
-    path('employees/edit/<int:id>/', EmployeeView.as_view(), name='employees_process'),
+    # path('employees/<int:pk>/edit/', EmployeeUpdateView.as_view(), name='edit_employee'),
+    path('employees/<int:pk>/delete/', EmployeeDeleteView.as_view(), name='delete_employee'),
 
-    path('area/', AreaView.as_view(), name='area_list'),
-    path('area/<int:id>', AreaView.as_view(), name='area_process'),
+    path('areas/', AreaView.as_view(), name='areas_list'),
+    path('areas/<int:id>', AreaView.as_view(), name='areas_process'),
+
     path('studies/', StudiesView.as_view(), name='studies_list'),
     path('studies/<int:id>', StudiesView.as_view(), name='studies_process'),
+
+
     path('specialty/', SpecialtyView.as_view(), name='specialty_list'),
-    path('specialty/<int:id>', SpecialtyView.as_view(), name='specialty_process'),
-    path('student/', StudentView.as_view(), name='student_list'),
-    path('student/<int:id>', StudentView.as_view(), name='student_process'),
+    path('specialty/<int:id>/edit/', SpecialtyView.as_view(), name='specialty_edit'),
+    path('specialty/<int:pk>/delete/', SpecialtyDeleteView.as_view(), name='specialty_delete'),
+
+    path('students/', StudentView.as_view(), name='student_list'),
+    path('students/<int:id>', StudentView.as_view(), name='student_process'),
+
     path('unities/', UnitiesView.as_view(), name='unities_list'),
     path('unities/<int:id>', UnitiesView.as_view(), name='unities_process'),
+
     path('proyects/', ProyectView.as_view(), name='proyects_list'),
     path('proyects/<int:id>', ProyectView.as_view(), name='proyects_process'),
+
     path('events/', EventView.as_view(), name='events_list'),
     path('events/<int:id>', EventView.as_view(), name='events_process'),
+
     path('lineinvs/', LineInvView.as_view(), name='lineinvs_list'),
     path('lineinvs/<int:id>', LineInvView.as_view(), name='lineinvs_process'),
+
     path('articles/', ArticlesView.as_view(), name='articles_list'),
     path('articles/<int:id>', ArticlesView.as_view(), name='articles_process'),
 
