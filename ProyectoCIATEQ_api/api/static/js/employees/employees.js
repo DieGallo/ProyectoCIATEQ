@@ -14,60 +14,55 @@ document.addEventListener("DOMContentLoaded", function() {
     const editEmployeeFormContainer = document.getElementById("editEmployeeForm");
 
     // Botones de cancelación de formularios
-    const addCancelButton = document.getElementById("addCancelButton");
-    const editCancelButton = document.getElementById("editCancelButton");
+    const addCancelButtonEmployee = document.getElementById("addCancelButtonEmployee");
+    const editCancelButtonEmployee = document.getElementById("editCancelButtonEmployee");
 
     // Variable de la paginación de Empleados
-    const pagination = document.getElementById("paginationEmployee");
-
-    // Tabs de los detalles del Empleado
-    const tabsEmployee = document.getElementById("tabsEmployee");
+    const paginationEmployee = document.getElementById("paginationEmployee");
 
     // Interacción del botón y formulario de Agregar Empleado
     addEmployeeButton.addEventListener("click", function() {
         employeeTableContainer.style.display = "none";
-        pagination.style.display = "none";
-        tabsEmployee.style.display = "none";
+        paginationEmployee.style.display = "none";
         addEmployeeFormContainer.style.display = "block";
     });
 
     // Interacción del botón y formulario para Editar un Empleado
     editEmployeeButton.addEventListener("click", function() {
         employeeTableContainer.style.display = "none";
-        pagination.style.display = "none";
-        tabsEmployee.style.display = "none";
+        paginationEmployee.style.display = "none";
         editEmployeeFormContainer.style.display = "block";
     });
 
     // Botones de cancelación de interacciones
     // Nuevo
-    addCancelButton.addEventListener("click", function() {
+    addCancelButtonEmployee.addEventListener("click", function() {
         addEmployeeFormContainer.style.display = "none";
         employeeTableContainer.style.display = "block";
-        pagination.style.display = "block";
-        tabsEmployee.style.display = "block";
+        paginationEmployee.style.display = "block";
         window.location.reload();
     });
 
     // Editar
-    editCancelButton.addEventListener("click", function() {
+    editCancelButtonEmployee.addEventListener("click", function() {
         editEmployeeFormContainer.style.display = "none";
         employeeTableContainer.style.display = "block";
-        pagination.style.display = "block";
-        tabsEmployee.style.display = "block";
+        paginationEmployee.style.display = "block";
         window.location.reload();
     });
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
     const checkboxes = document.querySelectorAll('.employee-checkbox');
-    const deleteForm = document.getElementById('delete-form');
+    let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
     function toggleButtons() {
         let anyChecked = false;
+
         checkboxes.forEach(function(checkbox) {
             if (checkbox.checked) {
                 anyChecked = true;
+                selectedId = checkbox.value;
             }
         });
 
@@ -81,13 +76,52 @@ document.addEventListener("DOMContentLoaded", function() {
             delEmployeeButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
             editEmployeeButton.disabled = true;
             delEmployeeButton.disabled = true;
+            selectedId = null;
+        }
+    }
+
+    // Función para redirigir a la URL de edición
+    function redirectToEdit() {
+        if (selectedId) {
+            window.location.href = `/specialty/${selectedId}/edit/`;
         }
     }
 
     // Añadir event listeners a todos los checkboxes
+    // Función para que solamente esté un checkbox seleccionado a la vez.
     checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', toggleButtons);
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Deselecciona todos los demás checkboxes
+                checkboxes.forEach(function(otherCheckbox) {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
+            }
+            toggleButtons();
+        });
     });
+
+    // Añadir event listener al botón de edición
+    editEmployeeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToEdit();
+    });
+
+    // ------------------------------------ delete --------------------------
+    function redirectToDelete() {
+        if (selectedId) {
+            window.location.href = `/specialty/${selectedId}/delete/`;
+        }
+    }
+
+    // Añadir event listener al botón de edición
+    delEmployeeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToDelete();
+    });
+
 
     delEmployeeButton.addEventListener('click', function() {
         let selectedEmployeeId = null;

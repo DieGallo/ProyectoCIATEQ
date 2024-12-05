@@ -200,24 +200,24 @@ class SpecialtyView(View):
 
     def get(self, request, id = 0):
         specialties = Specialty.objects.all()
-        specialtiesPUT = None
-        if id != 0:
-            specialty = Specialty.objects.filter(id=id).first()
+        specialty = get_object_or_404(Specialty, id=id) if id else None
 
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'specialties': specialties,
-            'specialtiesPUT': specialtiesPUT
+            'specialties': specialties, # GET
+            'specialty': specialty # PUT
         }
 
         return render(request, 'specialties/specialty.html', context)
 
-    def post(self, request):
+    def post(self, request, id=0):
         name = request.POST.get('name')
-        Specialty.objects.create(name=name)
-        return redirect('/specialty/')
-
+        if id:
+            return self.put(request, id)
+        else:
+            Specialty.objects.create(name=name)
+            return redirect('/specialty/')
 
     def put(self, request, id):
         specialty = get_object_or_404(Specialty, id=id)
@@ -587,44 +587,37 @@ class LineInvView(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+
     def get(self, request, id = 0):
         lineinvs = LineInv.objects.all()
+        lineinv = get_object_or_404(LineInv, id=id) if id else None
+
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'lineinvs': lineinvs
+            'lineinvs': lineinvs,
+            'lineinv': lineinv
         }
 
         return render(request, 'lineinvs/lineinvs.html', context)
 
-    def post(self, request):
+    def post(self, request, id=0):
         # Cargamos el cuerpo del request en una variable
-        jd = request.POST
-
-        # Convertimos en un objeto la variable
-        LineInv.objects.create(name=jd['name'])
-        return redirect('/lineinvs/')
+        name = request.POST.get('name')
+        if id:
+            return self.put(request, id)
+        else:
+            LineInv.objects.create(name=name)
+            return redirect('/lineinvs/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        lineinvs = list(LineInv.objects.filter(id=id).values())
-        if len(lineinvs) > 0:
-            lineinv = LineInv.objects.get(id=id)
-            lineinv.name = jd['name']
+        lineinv = get_object_or_404(LineInv, id=id)
+        name = request.POST.get('name')
+        if name:
+            lineinv.name = name
             lineinv.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an lineinv to save."}
-        return JsonResponse(datos)
+        return redirect('/lineinvs/')
 
-    def delete(self, request, id = 0):
-        lineinvs = list(LineInv.objects.filter(id=id).values())
-        if len(lineinvs) > 0:
-            LineInv.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an lineinv to save."}
-        return JsonResponse(datos)
 
 ################ API Class Articles ################////
 class ArticlesView(View):

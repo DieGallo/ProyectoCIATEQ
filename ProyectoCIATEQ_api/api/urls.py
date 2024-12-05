@@ -14,8 +14,8 @@ urlpatterns = [
 
     # Se agrega un int:id para recibir los datos de POST
     # Endpoints del CRUD Back-end.
-    # path('employees/<int:pk>/edit/', EmployeeUpdateView.as_view(), name='edit_employee'),
-    path('employees/<int:pk>/delete/', EmployeeDeleteView.as_view(), name='delete_employee'),
+    path('employees/<int:id>/edit/', EmployeeView.as_view(), name='employees_edit'),
+    path('employees/<int:pk>/delete/', EmployeeView.as_view(), name='employees_delete'),
 
     path('areas/', AreaView.as_view(), name='areas_list'),
     path('areas/<int:id>', AreaView.as_view(), name='areas_process'),
@@ -41,7 +41,7 @@ urlpatterns = [
     path('events/<int:id>', EventView.as_view(), name='events_process'),
 
     path('lineinvs/', LineInvView.as_view(), name='lineinvs_list'),
-    path('lineinvs/<int:id>', LineInvView.as_view(), name='lineinvs_process'),
+    path('lineinvs/<int:id>/edit/', LineInvView.as_view(), name='lineinvs_edit'),
 
     path('articles/', ArticlesView.as_view(), name='articles_list'),
     path('articles/<int:id>', ArticlesView.as_view(), name='articles_process'),

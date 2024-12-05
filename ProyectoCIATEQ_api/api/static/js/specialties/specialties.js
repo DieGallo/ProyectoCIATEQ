@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // Botones de cancelación de formularios
     const addCancelButtonSpecialty = document.getElementById("addCancelButtonSpecialty");
     const editCancelButtonSpecialty = document.getElementById("editCancelButtonSpecialty");
+    const delCancelButtonSpecialty = document.getElementById("delCancelButtonSpecialty");
+    const confirmDeleteButtonSpecialty = document.getElementById("confirmDeleteButtonSpecialty");
 
     // Variable de la paginación de Empleados
     const paginationSpecialty = document.getElementById("paginationSpecialty");
@@ -53,7 +55,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
     const checkboxes = document.querySelectorAll('.specialty-checkbox');
-    const deleteForm = document.getElementById('delete-form');
     let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
@@ -88,6 +89,19 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
+
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const specialtyTableContainer = document.getElementById("specialtyTable");
+        const editSpecialtyForm = document.getElementById("editSpecialtyForm");
+
+        specialtyTableContainer.style.display = "none"; // Oculta la tabla
+        paginationSpecialty.style.display = "none"; // Oculta la paginación
+        editSpecialtyForm.hidden = false; // Muestra el formulario de edición
+    }
+
     // Añadir event listeners a todos los checkboxes
     // Función para que solamente esté un checkbox seleccionado a la vez.
     checkboxes.forEach(function(checkbox) {
@@ -110,56 +124,110 @@ document.addEventListener("DOMContentLoaded", function() {
         redirectToEdit();
     });
 
+    // Agrega un evento de clic al botón de cancelar
+    editCancelButtonSpecialty.addEventListener("click", function() {
+        window.location.href = "/specialty/";
+    });
+
     // ------------------------------------ delete --------------------------
+
+    // Función para redirigir a la URL de edición
     function redirectToDelete() {
         if (selectedId) {
             window.location.href = `/specialty/${selectedId}/delete/`;
         }
     }
 
-    // Añadir event listener al botón de edición
-    delSpecialtyButton.addEventListener('click', function(event) {
-        event.preventDefault();
-        redirectToDelete();
-    });
+    // Verificar la URL actual
+    const currentURLDelete = window.location.href;
 
+    // Ocultar la tabla si la URL contiene '/delete/'
+    if (currentURLDelete.includes('/delete/')) {
+        const specialtyTableContainer = document.getElementById("specialtyTable");
+        const editSpecialtyForm = document.getElementById("editSpecialtyForm");
 
-    delSpecialtyButton.addEventListener('click', function() {
-        let selectedEmployeeId = null;
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedEmployeeId = checkbox.value;
-            }
-        });
-
-        if (selectedEmployeeId) {
-            delEmployeeModal(selectedEmployeeId);
-        }
-    });
-
-    let deleteUrl = '';
-
-    function delEmployeeModal(employeeId) {
-        // Muestra el modal
-        const modal = document.getElementById('popup-modal');
-        modal.classList.remove('hidden');
-
-        // Configura la URL de eliminación
-        deleteUrl = `/employees/${employeeId}/delete/`;
+        specialtyTableContainer.style.display = "none"; // Oculta la tabla
+        paginationSpecialty.style.display = "none"; // Oculta la paginación
+        editSpecialtyForm.hidden = false; // Muestra el formulario de edición
     }
 
-    function closeModal() {
-        const modal = document.getElementById('popup-modal');
-        modal.classList.add('hidden');
-    }
+    // // Mostrar el modal cuando se hace clic en el botón de eliminar
+    // delSpecialtyButton.addEventListener("click", function() {
+    //     // Se extrae el ID de la especialidad seleccionada
+    //     const specialtyId = selectedId;
+    //     confirmDeleteButtonSpecialty.setAttribute("data-specialty-id", specialtyId);
+    //     // Mostrar modal
+    //     document.getElementById("popup-modal").classList.remove("hidden");
+    // });
 
-    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-        window.location.href = deleteUrl;
-    });
+    // // Confirmar eliminación y hacer la solicitud de eliminación
+    // confirmDeleteButtonSpecialty.addEventListener("click", function() {
+    //     const specialtyId = confirmDeleteButtonSpecialty.getAttribute("data-specialty-id");
 
+    //     if (specialtyId) {
+    //         fetch(`/specialty/${specialtyId}/delete/`, {
+    //                 method: "DELETE",
+    //                 headers: {
+    //                     "X-CSRFToken": getCookie("csrftoken"),
+    //                 },
+    //             })
+    //             .then(response => {
+    //                 if (response.ok) {
+    //                     window.location.href = "/specialty/";
+    //                     modal.classList.add("hidden");
+    //                     // Recarga la página automáticamente
+    //                     window.location.reload();
+    //                 } else {
+    //                     console.error("Error deleting specialty");
+    //                 }
+    //             })
+    //             .catch(error => {
+    //                 console.error("Error:", error);
+    //             });
+    //     }
+    // });
+
+    // // Función para obtener el token CSRF
+    // function getCookie(name) {
+    //     let cookieValue = null;
+    //     if (document.cookie && document.cookie !== '') {
+    //         const cookies = document.cookie.split(';');
+    //         for (let i = 0; i < cookies.length; i++) {
+    //             const cookie = cookies[i].trim();
+    //             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return cookieValue;
+    // }
+
+    // // Añadir event listeners a todos los checkboxes
+    // checkboxes.forEach(function(checkbox) {
+    //     checkbox.addEventListener('change', function() {
+    //         if (this.checked) {
+    //             // Deselecciona todos los demás checkboxes
+    //             checkboxes.forEach(function(otherCheckbox) {
+    //                 if (otherCheckbox !== checkbox) {
+    //                     otherCheckbox.checked = false;
+    //                 }
+    //             });
+    //         }
+    //         toggleButtons();
+    //     });
+    // });
+
+    // // Evento de cancelar (ocultar modal)
+    // document.querySelectorAll('[data-modal-hide="popup-modal"]').forEach(function(button) {
+    //     button.addEventListener("click", function() {
+    //         document.getElementById("popup-modal").classList.add("hidden");
+    //     });
+    // });
 
     // Llama a la función al cargar la página por si hay algún checkbox preseleccionado
     toggleButtons();
     delEmployeeModal();
     closeModal();
+    getCookie();
 });

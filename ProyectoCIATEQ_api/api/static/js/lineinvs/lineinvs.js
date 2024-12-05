@@ -52,15 +52,17 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
-    const checkboxes = document.querySelectorAll('.employee-checkbox');
-    const deleteForm = document.getElementById('delete-form');
+    const checkboxes = document.querySelectorAll('.lineinvs-checkbox');
+    let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
     function toggleButtons() {
         let anyChecked = false;
+
         checkboxes.forEach(function(checkbox) {
             if (checkbox.checked) {
                 anyChecked = true;
+                selectedId = checkbox.value;
             }
         });
 
@@ -74,46 +76,59 @@ document.addEventListener("DOMContentLoaded", function() {
             delLineInvButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
             editLineInvButton.disabled = true;
             delLineInvButton.disabled = true;
+            selectedId = null;
         }
+    }
+
+    // ------------------------------- EDIT -----------------------------
+    // Función para redirigir a la URL de edición
+    function redirectToEdit() {
+        if (selectedId) {
+            window.location.href = `/lineinvs/${selectedId}/edit/`;
+        }
+    }
+
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
+
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const lineInvTableContainer = document.getElementById("lineInvTable");
+        const editLineInvFormContainer = document.getElementById("editLineInvForm");
+
+        lineInvTableContainer.style.display = "none"; // Oculta la tabla
+        paginationLineInv.style.display = "none"; // Oculta la paginación
+        editLineInvFormContainer.hidden = false; // Muestra el formulario de edición
     }
 
     // Añadir event listeners a todos los checkboxes
+    // Función para que solamente esté un checkbox seleccionado a la vez.
     checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', toggleButtons);
-    });
-
-    delLineInvButton.addEventListener('click', function() {
-        let selectedEmployeeId = null;
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedEmployeeId = checkbox.value;
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Deselecciona todos los demás checkboxes
+                checkboxes.forEach(function(otherCheckbox) {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
             }
+            toggleButtons();
         });
-
-        if (selectedEmployeeId) {
-            delEmployeeModal(selectedEmployeeId);
-        }
     });
 
-    let deleteUrl = '';
-
-    function delEmployeeModal(employeeId) {
-        // Muestra el modal
-        const modal = document.getElementById('popup-modal');
-        modal.classList.remove('hidden');
-
-        // Configura la URL de eliminación
-        deleteUrl = `/employees/${employeeId}/delete/`;
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('popup-modal');
-        modal.classList.add('hidden');
-    }
-
-    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-        window.location.href = deleteUrl;
+    // Añadir event listener al botón de edición
+    editLineInvButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToEdit();
     });
+
+    // Agrega un evento de clic al botón de cancelar
+    editCancelButtonLineInv.addEventListener("click", function() {
+        window.location.href = "/lineinvs/";
+    });
+
+
 
 
     // Llama a la función al cargar la página por si hay algún checkbox preseleccionado
