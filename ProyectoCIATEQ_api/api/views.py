@@ -324,51 +324,60 @@ class UnitiesView(View):
 
     def get(self, request, id = 0):
         unities = Unities.objects.all()
+        unity = get_object_or_404(Unities, id=id) if id else None
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'unities': unities
+            'unities': unities,
+            'unity': unity # PUT
         }
 
-        return render(request, 'unities.html', context)
+        return render(request, 'unities/unities.html', context)
 
-    def post(self, request):
+    def post(self, request, id=0):
         # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+        principal = request.POST.get('principal')
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
 
-        # Convertimos en un objeto la variable
-        Unities.objects.create(principal=jd['principal'],
-                                name=jd['name'],
-                                phone=jd['phone'],
-                                address=jd['address'],
-                                city=jd['city'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+        if id:
+            return self.put(request, id)
+        else:
+            # Convertimos en un objeto la variable
+            Unities.objects.create(principal=principal,
+                                name=name,
+                                phone=phone,
+                                address=address,
+                                city=city)
+            return redirect('/unities/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        unities = list(Unities.objects.filter(id=id).values())
-        if len(unities) > 0:
-            unity = Unities.objects.get(id=id)
-            unity.principal = jd['principal']
-            unity.name = jd['name']
-            unity.phone = jd['phone']
-            unity.address = jd['address']
-            unity.city = jd['city']
-            unity.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an unity to save."}
-        return JsonResponse(datos)
+        unity = get_object_or_404(Unities, id=id)
+        principal = request.POST.get('principal')
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
 
-    def delete(self, request, id):
-        unities = list(Unities.objects.filter(id=id).values())
-        if len(unities) > 0:
-            Unities.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an unity to save."}
-        return JsonResponse(datos)
+        if principal and name and phone and address and city:
+            unity.principal = principal
+            unity.name = name
+            unity.phone = phone
+            unity.address = address
+            unity.city = city
+            unity.save()
+        return redirect('/unities/')
+
+    # def delete(self, request, id):
+    #     unities = list(Unities.objects.filter(id=id).values())
+    #     if len(unities) > 0:
+    #         Unities.objects.filter(id=id).delete()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an unity to save."}
+    #     return JsonResponse(datos)
 
 ################ API Class Area ################////
 class AreaView(View):
@@ -761,41 +770,41 @@ class TypeProyectView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        typeproyect = TypeProyect.objects.all()
+        typeproyects = TypeProyect.objects.all()
+        typeproyect = get_object_or_404(TypeProyect, id=id) if id else None
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
+            'typeproyects': typeproyects,
             'typeproyect': typeproyect
         }
 
-        return render(request, 'typeProyect.html', context)
+        return render(request, 'typeProyect/typeProyect.html', context)
 
-    def post(self, request):
-        jd = json.loads(request.body)
-        TypeProyect.objects.create(name=jd['name'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        if id:
+            return self.put(request, id)
+        else:
+            TypeProyect.objects.create(name=name)
+            return redirect('/typeProyect/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        typeProyect = list(TypeProyect.objects.filter(id=id).values())
-        if len(typeProyect) > 0:
-            typeProyect = TypeProyect.objects.get(id=id)
-            typeProyect.name = jd['name']
-            typeProyect.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+        typeP = get_object_or_404(TypeProyect, id=id)
+        name = request.POST.get('name')
+        if name:
+            typeP.name = name
+            typeP.save()
+        return redirect('/typeProyect/')
 
-    def delete(self, request, id = 0):
-        typeProyect = list(TypeProyect.objects.filter(id=id).values())
-        if len(typeProyect) > 0:
-            TypeProyect.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+    # def delete(self, request, id = 0):
+    #     typeProyect = list(TypeProyect.objects.filter(id=id).values())
+    #     if len(typeProyect) > 0:
+    #         TypeProyect.objects.filter(id=id).delete()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an article to save."}
+    #     return JsonResponse(datos)
 
 class TypeEventView(View):
     @method_decorator(csrf_exempt)
@@ -803,41 +812,41 @@ class TypeEventView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        typeevent = TypeEvent.objects.all()
+        typeevents = TypeEvent.objects.all()
+        typeevent = get_object_or_404(TypeEvent, id=id) if id else None
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
+            'typeevents': typeevents,
             'typeevent': typeevent
         }
 
-        return render(request, 'typeEvent.html', context)
+        return render(request, 'typeEvent/typeEvent.html', context)
 
-    def post(self, request):
-        jd = json.loads(request.body)
-        TypeEvent.objects.create(name=jd['name'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        if id:
+            return self.put(request, id)
+        else:
+            TypeEvent.objects.create(name=name)
+            return redirect('/typeEvent/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        typeEvent = list(TypeEvent.objects.filter(id=id).values())
-        if len(typeEvent) > 0:
-            typeEvent = TypeEvent.objects.get(id=id)
-            typeEvent.name = jd['name']
-            typeEvent.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+        typeE = get_object_or_404(TypeEvent, id=id)
+        name = request.POST.get('name')
+        if name:
+            typeE.name = name
+            typeE.save()
+        return redirect('/typeEvent/')
 
-    def delete(self, request, id = 0):
-        typeEvent = list(TypeEvent.objects.filter(id=id).values())
-        if len(typeEvent) > 0:
-            TypeEvent.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+    # def delete(self, request, id = 0):
+    #     typeEvent = list(TypeEvent.objects.filter(id=id).values())
+    #     if len(typeEvent) > 0:
+    #         TypeEvent.objects.filter(id=id).delete()
+    #         datos = {'message': "Success"}
+    #     else:
+    #         datos = {'message': "There is not an article to save."}
+    #     return JsonResponse(datos)
 
 class CategoriesView(View):
     @method_decorator(csrf_exempt)

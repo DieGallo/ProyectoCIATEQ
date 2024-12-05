@@ -32,7 +32,7 @@ urlpatterns = [
     path('students/<int:id>', StudentView.as_view(), name='student_process'),
 
     path('unities/', UnitiesView.as_view(), name='unities_list'),
-    path('unities/<int:id>', UnitiesView.as_view(), name='unities_process'),
+    path('unities/<int:id>/edit/', UnitiesView.as_view(), name='unities_edit'),
 
     path('proyects/', ProyectView.as_view(), name='proyects_list'),
     path('proyects/<int:id>', ProyectView.as_view(), name='proyects_process'),
@@ -48,10 +48,10 @@ urlpatterns = [
 
     # URLs de tablas intermedias
     path('typeEvent/', TypeEventView.as_view(), name='typeEvent_list'),
-    path('typeEvent/<int:id>', TypeEventView.as_view(), name='typeEvent_process'),
+    path('typeEvent/<int:id>/edit/', TypeEventView.as_view(), name='typeEvent_edit'),
 
     path('typeProyect/', TypeProyectView.as_view(), name='typeProyect_list'),
-    path('typeProyect/<int:id>', TypeProyectView.as_view(), name='typeProyect_process'),
+    path('typeProyect/<int:id>/edit/', TypeProyectView.as_view(), name='typeProyect_edit'),
 
     path('category/', CategoriesView.as_view(), name='category_list'),
     path('category/<int:id>', CategoriesView.as_view(), name='category_process'),
