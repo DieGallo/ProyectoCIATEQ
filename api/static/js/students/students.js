@@ -77,13 +77,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
     const checkboxes = document.querySelectorAll('.student-checkbox');
+    let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
     function toggleButtons() {
         let anyChecked = false;
+
         checkboxes.forEach(function(checkbox) {
             if (checkbox.checked) {
                 anyChecked = true;
+                selectedId = checkbox.value;
             }
         });
 
@@ -97,51 +100,58 @@ document.addEventListener("DOMContentLoaded", function() {
             delStudentButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
             editStudentButton.disabled = true;
             delStudentButton.disabled = true;
+            selectedId = null;
         }
     }
 
-    function getSelectedStudentId() {
-        let selectedId = null;
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedId = checkbox.closest('input').getAttribute('data-id');
-            }
-        });
-        return selectedId;
+    // Función para redirigir a la URL de edición
+    function redirectToEdit() {
+        if (selectedId) {
+            window.location.href = `/students/${selectedId}/edit/`;
+        }
     }
 
-    editStudentButton.addEventListener('click', function() {
-        const studentId = getSelectedStudentId();
-        if (studentId) {
-            fetch(`/students/${studentId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('first_name').value = data.name;
-                    document.getElementById('last_name').value = data.lastName;
-                    document.getElementById('photo').value = data.photo;
-                    document.getElementById('birthdate').value = data.birthdate;
-                    document.getElementById('sex').value = data.sex;
-                    document.getElementById('phone').value = data.phone;
-                    document.getElementById('email').value = data.email;
-                    document.getElementById('address').value = data.address;
-                    document.getElementById('city').value = data.city;
-                    document.getElementById('country').value = data.country;
-                    document.getElementById('startDate').value = data.startDate;
-                    document.getElementById('endDate').value = data.endDate;
-                    document.getElementById('area_id').value = data.area_id;
-                    document.getElementById('studies_id').value = data.studies_id;
-                    editForm.style.display = 'block';
-                });
-        }
-    });
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
 
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const studentTableContainer = document.getElementById("studentTable");
+        const editStudentButton = document.getElementById("editStudentForm");
+
+        studentTableContainer.style.display = "none"; // Oculta la tabla
+        paginationStudent.style.display = "none"; // Oculta la paginación
+        editStudentFormContainer.hidden = false; // Muestra el formulario de edición
+    }
 
     // Añadir event listeners a todos los checkboxes
+    // Función para que solamente esté un checkbox seleccionado a la vez.
     checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', toggleButtons);
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Deselecciona todos los demás checkboxes
+                checkboxes.forEach(function(otherCheckbox) {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
+            }
+            toggleButtons();
+        });
     });
 
+    // Añadir event listener al botón de edición
+    editStudentButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToEdit();
+    });
 
+    // Agrega un evento de clic al botón de cancelar
+    editCancelButton.addEventListener("click", function() {
+        window.location.href = "/students/";
+    });
+
+    // ------------------------------------- DELETE --------------------------------
     const delConfirmButtonStudent = document.getElementById('delConfirmStudent');
 
     delConfirmButtonStudent.addEventListener('click', function() {

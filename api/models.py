@@ -13,7 +13,7 @@ class Unities(models.Model):
         texto = "{0} - {1}"
         return texto.format(self.name, self.address)
 
-class Area(models.Model):
+class Areas(models.Model):
     # Llave foránea de Unities to Areas
     unities = models.ForeignKey(Unities, on_delete=models.CASCADE)
     # Campo agregado
@@ -24,7 +24,7 @@ class Area(models.Model):
         texto = "{0}"
         return texto.format(self.name)
 
-class Specialty(models.Model):
+class Specialties(models.Model):
     name = models.TextField(max_length=100)
     # Campo agreado
     estatus = models.BooleanField(default=True)
@@ -33,9 +33,9 @@ class Specialty(models.Model):
         texto = "{0}"
         return texto.format(self.name)
 
-class Studies(models.Model):
+class LevelStudies(models.Model):
     # Llave foránea de Studies to Specialty
-    specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE)
+    specialty = models.ForeignKey(Specialties, on_delete=models.CASCADE)
     name =  models.CharField(max_length=100)
 
     def __str__(self):
@@ -43,7 +43,7 @@ class Studies(models.Model):
         return texto.format(self.description)
 
 # Se crea el modelo de la Tabla de api_employee en PostgreSQL
-class Employee(models.Model):
+class Employees(models.Model):
     name = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
     # Campo agregado
@@ -56,8 +56,8 @@ class Employee(models.Model):
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
     # Llaves Foráneas de la tabla de empleado.
-    area = models.ForeignKey(Area, on_delete=models.CASCADE)
-    studies = models.ForeignKey(Studies, on_delete=models.CASCADE)
+    area = models.ForeignKey(Areas, on_delete=models.CASCADE)
+    studies = models.ForeignKey(LevelStudies, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
     # Campos agregados
     startDate = models.DateField(blank=True, null=True)
@@ -68,7 +68,7 @@ class Employee(models.Model):
         texto = "{0} {1}, ({2})"
         return texto.format(self.name, self.lastName, self.email)
 
-class Student(models.Model):
+class Students(models.Model):
     name = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
     birthdate = models.DateField(blank=True, null=True)
@@ -79,7 +79,7 @@ class Student(models.Model):
     city = models.CharField(max_length=50)
     university = models.CharField(max_length=50)
     # Llave foránea de Studies a Student
-    studies = models.ForeignKey(Studies, on_delete=models.CASCADE)
+    studies = models.ForeignKey(LevelStudies, on_delete=models.CASCADE)
     # Campo agregado
     typeStudent = models.CharField(max_length=100)
     status = models.BooleanField(default=True)
@@ -91,7 +91,7 @@ class Student(models.Model):
         return texto.format(self.name, self.lastName, self.university)
 
 # Clase agregada
-class TypeProyect(models.Model):
+class TypeProyects(models.Model):
     name = models.CharField(max_length=100)
 
 class Proyects(models.Model):
@@ -102,13 +102,13 @@ class Proyects(models.Model):
     areaKnowledge = models.CharField(max_length=100)
     status = models.BooleanField(default=True)
     place = models.CharField(max_length=200)
-    typeProyect = models.ForeignKey(TypeProyect, on_delete=models.CASCADE)
+    typeProyect = models.ForeignKey(TypeProyects, on_delete=models.CASCADE)
 
     def __str__(self):
         texto = "{0}"
         return texto.format(self.name)
 # Clase agregada
-class TypeEvent(models.Model):
+class TypeEvents(models.Model):
     name = models.CharField(max_length=100)
 
 class Events(models.Model):
@@ -118,13 +118,13 @@ class Events(models.Model):
     endDate = models.DateField(blank=True, null=True)
     # Campo agregado
     place = models.CharField(max_length=200)
-    typeEvent = models.ForeignKey(TypeEvent, on_delete=models.CASCADE)
+    typeEvent = models.ForeignKey(TypeEvents, on_delete=models.CASCADE)
 
     def __str__(self):
         texto = "{0}"
         return texto.format(self.name)
 
-class LineInv(models.Model):
+class LineInvs(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -153,27 +153,27 @@ class Articles(models.Model):
 
 #### Tablas Intermedias ####
 # DetProyect - Hace relación con Empleado y Proyectos
-class DetProyect(models.Model):
+class DetProyects(models.Model):
     proyect = models.ForeignKey(Proyects, on_delete=models.CASCADE)
-    workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    students = models.ForeignKey(Student, on_delete=models.CASCADE)
+    workers = models.ForeignKey(Employees, on_delete=models.CASCADE)
+    students = models.ForeignKey(Students, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
 
 # DetEvent - Hace relación con Empleado y Eventos
-class DetEvent(models.Model):
+class DetEvents(models.Model):
     events = models.ForeignKey(Events, on_delete=models.CASCADE)
-    workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    workers = models.ForeignKey(Employees, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
     date = models.DateField(blank=True, null=True)
 
 # DetLInvestigation - Hace relación con Empleado y LInvestigación
-class DetInvestigation(models.Model):
-    workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    research = models.ForeignKey(LineInv, on_delete=models.CASCADE)
+class DetInvestigations(models.Model):
+    workers = models.ForeignKey(Employees, on_delete=models.CASCADE)
+    research = models.ForeignKey(LineInvs, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
 
 # DetArticle - Hace referencia con Empleado y Articulos
-class DetArticle(models.Model):
-    workers = models.ForeignKey(Employee, on_delete=models.CASCADE)
+class DetArticles(models.Model):
+    workers = models.ForeignKey(Employees, on_delete=models.CASCADE)
     articles = models.ForeignKey(Articles, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)

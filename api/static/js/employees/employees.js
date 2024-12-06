@@ -20,10 +20,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Variable de la paginación de Empleados
     const paginationEmployee = document.getElementById("paginationEmployee");
 
+    const tabsEmployee = document.getElementById("tabsEmployee");
+
     // Interacción del botón y formulario de Agregar Empleado
     addEmployeeButton.addEventListener("click", function() {
         employeeTableContainer.style.display = "none";
         paginationEmployee.style.display = "none";
+        tabsEmployee.style.display = "none";
         addEmployeeFormContainer.style.display = "block";
     });
 
@@ -31,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function() {
     editEmployeeButton.addEventListener("click", function() {
         employeeTableContainer.style.display = "none";
         paginationEmployee.style.display = "none";
+        tabsEmployee.style.display = "none";
         editEmployeeFormContainer.style.display = "block";
     });
 
@@ -40,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function() {
         addEmployeeFormContainer.style.display = "none";
         employeeTableContainer.style.display = "block";
         paginationEmployee.style.display = "block";
+        tabsEmployee.style.display = "block";
         window.location.reload();
     });
 
@@ -48,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
         editEmployeeFormContainer.style.display = "none";
         employeeTableContainer.style.display = "block";
         paginationEmployee.style.display = "block";
+        tabsEmployee.style.display = "block";
         window.location.reload();
     });
 
@@ -83,8 +89,21 @@ document.addEventListener("DOMContentLoaded", function() {
     // Función para redirigir a la URL de edición
     function redirectToEdit() {
         if (selectedId) {
-            window.location.href = `/specialty/${selectedId}/edit/`;
+            window.location.href = `/employees/${selectedId}/edit/`;
         }
+    }
+
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
+
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const employeeTableContainer = document.getElementById("employeeTable");
+        const editEmployeeForm = document.getElementById("editEmployeeForm");
+
+        employeeTableContainer.style.display = "none"; // Oculta la tabla
+        paginationEmployee.style.display = "none"; // Oculta la paginación
+        editEmployeeForm.hidden = false; // Muestra el formulario de edición
     }
 
     // Añadir event listeners a todos los checkboxes
@@ -109,52 +128,57 @@ document.addEventListener("DOMContentLoaded", function() {
         redirectToEdit();
     });
 
+    // Agrega un evento de clic al botón de cancelar
+    editCancelButtonEmployee.addEventListener("click", function() {
+        window.location.href = "/employees/";
+    });
+
     // ------------------------------------ delete --------------------------
-    function redirectToDelete() {
-        if (selectedId) {
-            window.location.href = `/specialty/${selectedId}/delete/`;
-        }
-    }
+    // function redirectToDelete() {
+    //     if (selectedId) {
+    //         window.location.href = `/specialty/${selectedId}/delete/`;
+    //     }
+    // }
 
-    // Añadir event listener al botón de edición
-    delEmployeeButton.addEventListener('click', function(event) {
-        event.preventDefault();
-        redirectToDelete();
-    });
+    // // Añadir event listener al botón de edición
+    // delEmployeeButton.addEventListener('click', function(event) {
+    //     event.preventDefault();
+    //     redirectToDelete();
+    // });
 
 
-    delEmployeeButton.addEventListener('click', function() {
-        let selectedEmployeeId = null;
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedEmployeeId = checkbox.value;
-            }
-        });
+    // delEmployeeButton.addEventListener('click', function() {
+    //     let selectedEmployeeId = null;
+    //     checkboxes.forEach(function(checkbox) {
+    //         if (checkbox.checked) {
+    //             selectedEmployeeId = checkbox.value;
+    //         }
+    //     });
 
-        if (selectedEmployeeId) {
-            delEmployeeModal(selectedEmployeeId);
-        }
-    });
+    //     if (selectedEmployeeId) {
+    //         delEmployeeModal(selectedEmployeeId);
+    //     }
+    // });
 
-    let deleteUrl = '';
+    // let deleteUrl = '';
 
-    function delEmployeeModal(employeeId) {
-        // Muestra el modal
-        const modal = document.getElementById('popup-modal');
-        modal.classList.remove('hidden');
+    // function delEmployeeModal(employeeId) {
+    //     // Muestra el modal
+    //     const modal = document.getElementById('popup-modal');
+    //     modal.classList.remove('hidden');
 
-        // Configura la URL de eliminación
-        deleteUrl = `/employees/${employeeId}/delete/`;
-    }
+    //     // Configura la URL de eliminación
+    //     deleteUrl = `/employees/${employeeId}/delete/`;
+    // }
 
-    function closeModal() {
-        const modal = document.getElementById('popup-modal');
-        modal.classList.add('hidden');
-    }
+    // function closeModal() {
+    //     const modal = document.getElementById('popup-modal');
+    //     modal.classList.add('hidden');
+    // }
 
-    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-        window.location.href = deleteUrl;
-    });
+    // document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+    //     window.location.href = deleteUrl;
+    // });
 
 
     // Llama a la función al cargar la página por si hay algún checkbox preseleccionado

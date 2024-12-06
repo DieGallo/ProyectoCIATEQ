@@ -18,7 +18,7 @@ urlpatterns = [
     path('employees/<int:pk>/delete/', EmployeeView.as_view(), name='employees_delete'),
 
     path('areas/', AreaView.as_view(), name='areas_list'),
-    path('areas/<int:id>', AreaView.as_view(), name='areas_process'),
+    path('areas/<int:id>/edit/', AreaView.as_view(), name='areas_edit'),
 
     path('studies/', StudiesView.as_view(), name='studies_list'),
     path('studies/<int:id>', StudiesView.as_view(), name='studies_process'),
@@ -28,8 +28,8 @@ urlpatterns = [
     path('specialty/<int:id>/edit/', SpecialtyView.as_view(), name='specialty_edit'),
     path('specialty/<int:pk>/delete/', SpecialtyDeleteView.as_view(), name='specialty_delete'),
 
-    path('students/', StudentView.as_view(), name='student_list'),
-    path('students/<int:id>', StudentView.as_view(), name='student_process'),
+    path('students/', StudentView.as_view(), name='students_list'),
+    path('students/<int:id>/edit/', StudentView.as_view(), name='students_edit'),
 
     path('unities/', UnitiesView.as_view(), name='unities_list'),
     path('unities/<int:id>/edit/', UnitiesView.as_view(), name='unities_edit'),

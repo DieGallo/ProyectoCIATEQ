@@ -6,11 +6,10 @@ from django.views.generic.base import RedirectView
 from django.http import JsonResponse
 from django.http.response import HttpResponse as HttpResponse
 from django.views import View
-from .models import Employee, Area, Articles, Events, LineInv, Proyects, Specialty, Student, Studies, Unities, DetArticle, DetEvent, DetInvestigation, DetProyect, TypeEvent, TypeProyect, Categories
+from .models import Employees, Areas, Articles, Events, LineInvs, Proyects, Specialties, Students, LevelStudies, Unities, DetArticles, DetEvents, DetInvestigations, DetProyects, TypeEvents, TypeProyects, Categories
 import json
 from django.views.generic.edit import DeleteView
 from django.urls import reverse_lazy
-from .forms import EmployeeForm
 
 # Vista para la ruta de Urls.py de api
 def home(request):
@@ -29,16 +28,18 @@ class EmployeeView(View):
     # Devuelve la información de la tabla de datos
     ## Parámetro ID personalizada cada ID para traer los datos de cada empleado
     def get(self, request, id = 0):
-        employees = Employee.objects.all()
+        employees = Employees.objects.all()
+        employee = get_object_or_404(Employees, id=id) if id else None
 
         # Cuando se tienen FK se tienen que instaciar los datos en get para los combobox
-        area = Area.objects.all()
-        studies = Studies.objects.all()
+        area = Areas.objects.all()
+        studies = LevelStudies.objects.all()
 
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'employees': employees,
+            'employee': employee,
 
             # Traemos los datos de las FK
             # Cuando se recarge la página el dato aparezca los combobox
@@ -50,85 +51,99 @@ class EmployeeView(View):
         return render(request, 'employees/employee.html', context)
 
     # Se suben datos a la tabla de nuestra Base de datos
-    def post(self, request):
-        jd = request.POST
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        lastName = request.POST.get('lastName')
+        photo = request.POST.get('photo')
+        birthdate = request.POST.get('birthdate')
+        sex = request.POST.get('sex')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        country = request.POST.get('country')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        area_id = request.POST.get('area_id')
+        studies_id = request.POST.get('studies_id')
 
-        # Try-Catch para hacer un llamado de las Foreigns Key de otras tablas.
-        try:
+        if id:
+            return self.put(request, id)
+        else:
+            try:
+                # Instanciamos cada tabla Foránea que tengamos.
+                area = Areas.objects.get(id=area_id)
+                studies = LevelStudies.objects.get(id=studies_id)
+            except (Areas.DoesNotExist, LevelStudies.DoesNotExist):
+                # Retornamos una alerta por si da error.
+                return JsonResponse({'message': "Area or Studies not found"}, status=404)
 
-            # Instanciamos cada tabla Foránea que tengamos.
-            area = Area.objects.get(id=jd['area_id'])
-            studies = Studies.objects.get(id=jd['studies_id'])
-        except (Area.DoesNotExist, Studies.DoesNotExist):
-
-            # Retornamos una alerta por si da error.
-            return JsonResponse({'message': "Area or Studies not found"}, status=404)
-
-        # Convertimos el body en un .create, se agregan todos los campos que tiene el modelo
-        # Cada campo de nuestra tabla de la Base de datos tiene que ser llamada para que se guarde.
-        Employee.objects.create(name=jd['name'],
-                                lastName=jd['lastName'],
-                                photo=jd['photo'],
-                                birthdate=jd['birthdate'],
-                                sex=jd['sex'],
-                                phone=jd['phone'],
-                                email=jd['email'],
-                                address=jd['address'],
-                                city=jd['city'],
-                                country=jd['country'],
-                                startDate=jd['startDate'],
-                                area_id=area.id,
-                                studies_id=studies.id)
-
-        # Redireccionamos a la vista que toma la función del GET
+            Employees.objects.create(
+                name=name,
+                lastName=lastName,
+                photo=photo,
+                birthdate=birthdate,
+                sex=sex,
+                phone=phone,
+                email=email,
+                address=address,
+                city=city,
+                country=country,
+                startDate=startDate,
+                endDate=endDate,
+                area=area,  # Asignar instancia del área
+                studies=studies  # Asignar instancia del nivel de estudios
+            )
         return redirect('/employees/')
 
     # Modifica algún campo o tabla de nuestra Base de datos
     def put(self, request, id):
+        employee = get_object_or_404(Employees, id=id)
 
-        # Tomamos el cuerpo de nuestros datos y lo pasamos a una variable, estos datos ya están guardados por el POST
-        jd = request.PUT
+        name = request.POST.get('name')
+        lastName = request.POST.get('lastName')
+        photo = request.POST.get('photo')
+        birthdate = request.POST.get('birthdate')
+        sex = request.POST.get('sex')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        country = request.POST.get('country')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        area_id = request.POST.get('area_id')
+        studies_id = request.POST.get('studies_id')
 
-        # Guardamos en una variable toda la Instancia de la tabla.
-        employees = list(Employee.objects.filter(id=id).values())
+        # Intentar obtener las FK solo si se proporcionan nuevas IDs
+        area = None
+        studies = None
+        if area_id:
+            area = get_object_or_404(Areas, id=area_id)
+        if studies_id:
+            studies = get_object_or_404(LevelStudies, id=studies_id)
 
-        # Condición para actualizar cada uno de los datos del modelo de la tabla Employee
-        if len(employees) > 0:
+        if name: employee.name = name
+        if lastName: employee.lastName = lastName
+        if photo: employee.photo = photo
+        if birthdate: employee.birthdate = birthdate
+        if sex: employee.sex = sex
+        if phone: employee.phone = phone
+        if email: employee.email = email
+        if address: employee.address = address
+        if city: employee.city = city
+        if country: employee.country = country
+        if startDate: employee.startDate = startDate
+        if endDate: employee.endDate = endDate
+        if area: employee.area = area
+        if studies: employee.studies = studies
 
-            # Ingresamos cada campo de la tabla para que se pueda actualizar.
-            employee = Employee.objects.get(id=id)
-            employee.name = jd['name']
-            employee.lastName = jd['lastName']
-            employee.photo = jd['photo']
-            employee.birthdate = jd['birthdate']
-            employee.sex = jd['sex']
-            employee.phone = jd['phone']
-            employee.email = jd['email']
-            employee.address = jd['address']
-            employee.city = jd['city']
-            employee.country = jd['country']
-            employee.startDate = jd['startDate']
-            area_id = jd.get('area_id')
-            studies_id = jd.get('studies_id')
-
-            # Condicional para determinar si existen valores en las llaves foráneas.
-            if area_id and studies_id is not None:
-                try:
-
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    area = Area.objects.get(id=jd['area_id'])
-                    studies = Studies.objects.get(id=jd['studies_id'])
-                    employee.area = area
-                    employee.studies = studies
-                except (Area.DoesNotExist, Studies.DoesNotExist):
-                    return JsonResponse({'message': "Area or Studies not found"}, status=404)
-
-            employee.save()
+        employee.save()
         return redirect('/employees/')
 
 class EmployeeDeleteView(DeleteView):
-    model = Employee
-    employees = Employee.objects.all()
+    model = Employees
+    employees = Employees.objects.all()
     success_url = reverse_lazy('employees_list')
     template_name = 'employees/employee.html'
 
@@ -140,7 +155,7 @@ class StudiesView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        studies = Studies.objects.all()
+        studies = LevelStudies.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
@@ -154,21 +169,21 @@ class StudiesView(View):
         jd = json.loads(request.body)
 
         try:
-            specialities = Specialty.objects.get(id=jd['specialty_id'])
-        except Specialty.DoesNotExist:
+            specialities = Specialties.objects.get(id=jd['specialty_id'])
+        except Specialties.DoesNotExist:
             return JsonResponse({'message': "Speciality not found"}, status=404)
 
         # Convertimos en un objeto la variable
-        Studies.objects.create(name=jd['name'],
+        LevelStudies.objects.create(name=jd['name'],
                                specialty_id=specialities.id)
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
     def put(self, request, id):
         jd = request.PUT
-        studies = list(Studies.objects.filter(id=id).values())
+        studies = list(LevelStudies.objects.filter(id=id).values())
         if len(studies) > 0:
-            study = Studies.objects.get(id=id)
+            study = LevelStudies.objects.get(id=id)
             study.name = jd['name']
 
             specialty_id = jd.get('specialty_id')
@@ -176,17 +191,17 @@ class StudiesView(View):
             if specialty_id is not None:
                 try:
                     # Traemos el objeto de Specialty(FK) para poder determinar la edición de la variable
-                    specialty = Specialty.objects.get(id=specialty_id)
+                    specialty = Specialties.objects.get(id=specialty_id)
                     study.specialty = specialty
-                except Specialty.DoesNotExist:
+                except Specialties.DoesNotExist:
                     return JsonResponse({'message': "Specialty not found"}, status=404)
             study.save()
         return redirect('/specialty/')
 
     def delete(self, request, id):
-        studies = list(Studies.objects.filter(id=id).values())
+        studies = list(LevelStudies.objects.filter(id=id).values())
         if len(studies) > 0:
-            Studies.objects.filter(id=id).delete()
+            LevelStudies.objects.filter(id=id).delete()
             datos = {'message': "Success"}
         else:
             datos = {'message': "There is not an study to save."}
@@ -199,8 +214,8 @@ class SpecialtyView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        specialties = Specialty.objects.all()
-        specialty = get_object_or_404(Specialty, id=id) if id else None
+        specialties = Specialties.objects.all()
+        specialty = get_object_or_404(Specialties, id=id) if id else None
 
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
@@ -216,11 +231,11 @@ class SpecialtyView(View):
         if id:
             return self.put(request, id)
         else:
-            Specialty.objects.create(name=name)
+            Specialties.objects.create(name=name)
             return redirect('/specialty/')
 
     def put(self, request, id):
-        specialty = get_object_or_404(Specialty, id=id)
+        specialty = get_object_or_404(Specialties, id=id)
         name = request.POST.get('name')
         if name:
             specialty.name = name
@@ -228,8 +243,8 @@ class SpecialtyView(View):
         return redirect('/specialty/')
 
 class SpecialtyDeleteView(DeleteView):
-    model = Specialty
-    specialties = Specialty.objects.all()
+    model = Specialties
+    specialties = Specialties.objects.all()
     success_url = reverse_lazy('specialty_list')
     template_name = 'specialties/specialty.html'
 
@@ -240,77 +255,104 @@ class StudentView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        students = Student.objects.all()
-        studies = Studies.objects.all()
+        students = Students.objects.all()
+        student = get_object_or_404(Students, id=id) if id else None
+
+        studies = LevelStudies.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'students': students,
-            'studies': studies,
+            'students': students, # GET
+            'student': student, # PUT
+            'studies': studies, # FK
         }
 
         return render(request, 'students/students.html', context)
 
-    def post(self, request):
-        # Cargamos el cuerpo del request en una variable
-        jd = request.POST
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        lastName = request.POST.get('lastName')
+        birthdate = request.POST.get('birthdate')
+        sex = request.POST.get('sex')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        university = request.POST.get('university')
+        typeStudent = request.POST.get('typeStudent')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        studies_id = request.POST.get('studies_id')
 
-        try:
-            studies = Studies.objects.get(id=jd['studies_id'])
-        except Studies.DoesNotExist:
-            return JsonResponse({'message': "Studies not found"}, status=404)
+        if id:
+            return self.put(request, id)
+        else:
+            try:
+                # Instanciamos cada tabla Foránea que tengamos.
+                studies = LevelStudies.objects.get(id=studies_id)
+            except LevelStudies.DoesNotExist:
+                # Retornamos una alerta por si da error.
+                return JsonResponse({'message': "Studies not found"}, status=404)
 
-        # Convertimos en un objeto la variable
-        Student.objects.create(name=jd['name'],
-                                lastName=jd['lastName'],
-                                birthdate=jd['birthdate'],
-                                sex=jd['sex'],
-                                phone=jd['phone'],
-                                email=jd['email'],
-                                address=jd['address'],
-                                city=jd['city'],
-                                university=jd['university'],
-                                typeStudent=jd['typeStudent'],
-                                startDate=jd['startDate'],
-                                studies_id=studies.id)
+            # Convertimos en un objeto la variable
+            Students.objects.create(
+                name=name,
+                lastName=lastName,
+                birthdate=birthdate,
+                sex=sex,
+                phone=phone,
+                email=email,
+                address=address,
+                city=city,
+                university=university,
+                typeStudent=typeStudent,
+                startDate=startDate,
+                endDate=endDate,
+                studies=studies
+            )
         return redirect('/students/')
 
-    # def put(self, request, id):
-    #     jd = json.loads(request.body)
-    #     students = list(Student.objects.filter(id=id).values())
-    #     if len(students) > 0:
-    #         student = Student.objects.get(id=id)
-    #         student.name = jd['name']
-    #         student.lastName = jd['lastName']
-    #         student.birthdate = jd['birthdate']
-    #         student.sex = jd['sex']
-    #         student.phone = jd['phone']
-    #         student.email = jd['email']
-    #         student.address = jd['address']
-    #         student.city = jd['city']
-    #         student.university = jd['university']
-    #         student.typeStudent = jd['typeStudent']
-    #         student.startDate = jd['startDate']
-    #         studies_id = jd.get('studies_id')
+    def put(self, request, id):
+        student = get_object_or_404(Students, id=id)
 
-    #         if studies_id is not None:
-    #             try:
-    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-    #                 studies = Studies.objects.get(id=jd['studies_id'])
-    #                 student.studies = studies
-    #             except Unities.DoesNotExist:
-    #                 return JsonResponse({'message': "Studies not found"}, status=404)
+        name = request.POST.get('name')
+        lastName = request.POST.get('lastName')
+        birthdate = request.POST.get('birthdate')
+        sex = request.POST.get('sex')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        university = request.POST.get('university')
+        typeStudent = request.POST.get('typeStudent')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        studies_id = request.POST.get('studies_id')
 
-    #         student.save()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an student to change."}
-    #     return JsonResponse(datos)
+        studies = None
+        if studies_id:
+            studies = get_object_or_404(LevelStudies, id=studies_id)
+
+        if name: student.name = name
+        if lastName: student.lastName = lastName
+        if birthdate: student.birthdate = birthdate
+        if sex: student.sex = sex
+        if phone: student.phone = phone
+        if email: student.email = email
+        if address: student.address = address
+        if city: student.city = city
+        if university: student.university = university
+        if typeStudent: student.typeStudent = typeStudent
+        if startDate: student.startDate = startDate
+        if endDate: student.endDate = endDate
+        if studies: student.studies = studies
+        student.save()
+        return redirect('/students/')
 
     def delete(self, request, id):
-        students = list(Student.objects.filter(id=id).values())
+        students = list(Students.objects.filter(id=id).values())
         if len(students) > 0:
-            Student.objects.filter(id=id).delete()
+            Students.objects.filter(id=id).delete()
             datos = {'message': "Success"}
         else:
             datos = {'message': "There is not an student to save."}
@@ -386,7 +428,7 @@ class AreaView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        areas = Area.objects.all()
+        areas = Areas.objects.all()
         unities = Unities.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
@@ -411,7 +453,7 @@ class AreaView(View):
 
         # Convertimos en un objeto la variable
         # Se tiene que pasar el .id para que sea el valor de la columna
-        Area.objects.create(principal=jd['principal'],
+        Areas.objects.create(principal=jd['principal'],
                             name=jd['name'],
                             unities_id=unities.id)
         return redirect('/areas/')
@@ -442,9 +484,9 @@ class AreaView(View):
     #     return JsonResponse(datos)
 
     def delete(self, request, id = 0):
-        areas = list(Area.objects.filter(id=id).values())
+        areas = list(Areas.objects.filter(id=id).values())
         if len(areas) > 0:
-            Area.objects.filter(id=id).delete()
+            Areas.objects.filter(id=id).delete()
             datos = {'message': "Success"}
         else:
             datos = {'message': "There is not an area to save."}
@@ -458,7 +500,7 @@ class ProyectView(View):
 
     def get(self, request, id = 0):
         proyects = Proyects.objects.all()
-        typeP = TypeProyect.objects.all()
+        typeP = TypeProyects.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
@@ -473,8 +515,8 @@ class ProyectView(View):
         jd = request.POST
 
         try:
-            typeProyect = TypeProyect.objects.get(id=jd['typeProyect_id'])
-        except TypeProyect.DoesNotExist:
+            typeProyect = TypeProyects.objects.get(id=jd['typeProyect_id'])
+        except TypeProyects.DoesNotExist:
             return JsonResponse({'message': "TypeProyect not found"}, status=404)
 
         # Convertimos en un objeto la variable
@@ -529,7 +571,7 @@ class EventView(View):
 
     def get(self, request, id = 0):
         events = Events.objects.all()
-        typeE = TypeEvent.objects.all()
+        typeE = TypeEvents.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
@@ -544,8 +586,8 @@ class EventView(View):
         jd = request.POST
 
         try:
-            typeEvent = TypeEvent.objects.get(id=jd['typeEvent_id'])
-        except TypeEvent.DoesNotExist:
+            typeEvent = TypeEvents.objects.get(id=jd['typeEvent_id'])
+        except TypeEvents.DoesNotExist:
             return JsonResponse({'message': "TypeEvent not found"}, status=404)
 
         # Convertimos en un objeto la variable
@@ -598,8 +640,8 @@ class LineInvView(View):
 
 
     def get(self, request, id = 0):
-        lineinvs = LineInv.objects.all()
-        lineinv = get_object_or_404(LineInv, id=id) if id else None
+        lineinvs = LineInvs.objects.all()
+        lineinv = get_object_or_404(LineInvs, id=id) if id else None
 
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
@@ -616,17 +658,16 @@ class LineInvView(View):
         if id:
             return self.put(request, id)
         else:
-            LineInv.objects.create(name=name)
+            LineInvs.objects.create(name=name)
             return redirect('/lineinvs/')
 
     def put(self, request, id):
-        lineinv = get_object_or_404(LineInv, id=id)
+        lineinv = get_object_or_404(LineInvs, id=id)
         name = request.POST.get('name')
         if name:
             lineinv.name = name
             lineinv.save()
         return redirect('/lineinvs/')
-
 
 ################ API Class Articles ################////
 class ArticlesView(View):
@@ -715,7 +756,7 @@ class DetArticleView(View):
 
     def get(self, request, id = 0):
         if(id > 0):
-            detarticle = list(DetArticle.objects.filter(id=id).values())
+            detarticle = list(DetArticles.objects.filter(id=id).values())
             if len(detarticle) > 0:
                 detart = detarticle[0]
                 datos = {'message': "Success", 'DetArticles': detart}
@@ -723,7 +764,7 @@ class DetArticleView(View):
                 datos = {'message': "It does not to save data."}
             return JsonResponse(datos)
         else:
-            detarticle = list(DetArticle.objects.values())
+            detarticle = list(DetArticles.objects.values())
             if len(detarticle) > 0:
                 datos = {'message': "Success", 'DetArticles': detarticle}
             else:
@@ -734,9 +775,9 @@ class DetArticleView(View):
         jd = json.loads(request.body)
 
         article = Articles.objects.get(id=jd['articles_id'])
-        worker = Employee.objects.get(id=jd['workers_id'])
+        worker = Employees.objects.get(id=jd['workers_id'])
 
-        DetArticle.objects.create(
+        DetArticles.objects.create(
             articles_id = article.id,
             workers_id = worker.id
         )
@@ -746,19 +787,19 @@ class DetArticleView(View):
 
     def put(self, request, id):
         jd = json.loads(request.body)
-        detArticle = DetArticle.objects.get(id=id)
+        detArticle = DetArticles.objects.get(id=id)
 
         if 'articles_id' in jd:
             detArticle.articles_id = Articles.objects.get(id=jd['articles_id'])
         if 'workers_id' in jd:
-            detArticle.workers_id = Employee.objects.get(id=id['workers_id'])
+            detArticle.workers_id = Employees.objects.get(id=id['workers_id'])
 
         detArticle.save()
         datos = {'message': 'Success updated DetArticle'}
         return JsonResponse(datos)
 
     def delete(self, request, id):
-        detArticle = DetArticle.objects.get(id=id)
+        detArticle = DetArticles.objects.get(id=id)
         detArticle.delete()
         datos = {'message': 'Success deleted DetArticle'}
         return JsonResponse(datos)
@@ -770,8 +811,8 @@ class TypeProyectView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        typeproyects = TypeProyect.objects.all()
-        typeproyect = get_object_or_404(TypeProyect, id=id) if id else None
+        typeproyects = TypeProyects.objects.all()
+        typeproyect = get_object_or_404(TypeProyects, id=id) if id else None
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
@@ -786,11 +827,11 @@ class TypeProyectView(View):
         if id:
             return self.put(request, id)
         else:
-            TypeProyect.objects.create(name=name)
+            TypeProyects.objects.create(name=name)
             return redirect('/typeProyect/')
 
     def put(self, request, id):
-        typeP = get_object_or_404(TypeProyect, id=id)
+        typeP = get_object_or_404(TypeProyects, id=id)
         name = request.POST.get('name')
         if name:
             typeP.name = name
@@ -812,8 +853,8 @@ class TypeEventView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, id = 0):
-        typeevents = TypeEvent.objects.all()
-        typeevent = get_object_or_404(TypeEvent, id=id) if id else None
+        typeevents = TypeEvents.objects.all()
+        typeevent = get_object_or_404(TypeEvents, id=id) if id else None
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
@@ -828,11 +869,11 @@ class TypeEventView(View):
         if id:
             return self.put(request, id)
         else:
-            TypeEvent.objects.create(name=name)
+            TypeEvents.objects.create(name=name)
             return redirect('/typeEvent/')
 
     def put(self, request, id):
-        typeE = get_object_or_404(TypeEvent, id=id)
+        typeE = get_object_or_404(TypeEvents, id=id)
         name = request.POST.get('name')
         if name:
             typeE.name = name
