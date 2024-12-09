@@ -5,7 +5,18 @@
             <div class="w-1/2 text-left ">
                 <h3 class="text-3xl font-bold dark:text-white py-2">Tipo de Estudios</h3>
             </div>
-            {% include 'navigation.html' %}
+            <div class="flex mx-auto">
+                <input
+                                type="text"
+                                placeholder="Buscar..."
+                                class="w-full sm:w-96 h-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-6 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+            </div>
+            <div class="w-1/2 flex justify-end items-center">
+                <!-- ID para mandar a llamar el Formulario de nuevo empleado - Agrega un nuevo empleado -->
+                <button id="addEmployee" data-modal-toggle="crud-modal" type="button" class="focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Nuevo</button>
+                <button id="editEmployee" type="button" class="font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500">Editar</button>
+                <button id="delEmployee" onclick="delEmployeeModal()" data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500" type="button">Borrar</button>
+            </div>
         </div>
         <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -83,6 +94,8 @@
             <hr class="h-px my-5 bg-gray-200 border-0 dark:bg-gray-700">
         </div>
     </div>
+    {% load static %}
+    <script src="{% static 'js/studies/studies.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 </div>
 {% include 'footer.html' %}

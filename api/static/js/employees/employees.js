@@ -93,6 +93,60 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Función para mostrar el modal
+    function showModal() {
+        document.getElementById('popup-modal').classList.remove('hidden');
+    }
+
+    // Función para ocultar el modal
+    function hideModal() {
+        document.getElementById('popup-modal').classList.add('hidden');
+    }
+
+    // Función para eliminar el empleado
+    function deleteEmployee() {
+        if (selectedId) {
+            fetch(`/employees/${selectedId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken // Obtén el token CSRF del contexto de Django
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Eliminar la fila del empleado de la tabla
+                    document.querySelector(`#employee-row-${selectedId}`).remove();
+                    hideModal();
+                    window.location.reload();
+                } else {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    // Añadir event listener al botón de eliminación
+    delEmployeeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        showModal();
+    });
+
+    // Añadir event listener al botón de confirmación de eliminación
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    confirmDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        deleteEmployee();
+    });
+
+    // Añadir event listener al botón de cancelación de eliminación
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    cancelDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        hideModal();
+    });
+
+    // Obtener el token CSRF del contexto de Django
+    const csrfToken = '{{ csrf_token }}';
+
     // Verificar la URL actual
     const currentURLEdit = window.location.href;
 
@@ -133,56 +187,7 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = "/employees/";
     });
 
-    // ------------------------------------ delete --------------------------
-    // function redirectToDelete() {
-    //     if (selectedId) {
-    //         window.location.href = `/specialty/${selectedId}/delete/`;
-    //     }
-    // }
-
-    // // Añadir event listener al botón de edición
-    // delEmployeeButton.addEventListener('click', function(event) {
-    //     event.preventDefault();
-    //     redirectToDelete();
-    // });
-
-
-    // delEmployeeButton.addEventListener('click', function() {
-    //     let selectedEmployeeId = null;
-    //     checkboxes.forEach(function(checkbox) {
-    //         if (checkbox.checked) {
-    //             selectedEmployeeId = checkbox.value;
-    //         }
-    //     });
-
-    //     if (selectedEmployeeId) {
-    //         delEmployeeModal(selectedEmployeeId);
-    //     }
-    // });
-
-    // let deleteUrl = '';
-
-    // function delEmployeeModal(employeeId) {
-    //     // Muestra el modal
-    //     const modal = document.getElementById('popup-modal');
-    //     modal.classList.remove('hidden');
-
-    //     // Configura la URL de eliminación
-    //     deleteUrl = `/employees/${employeeId}/delete/`;
-    // }
-
-    // function closeModal() {
-    //     const modal = document.getElementById('popup-modal');
-    //     modal.classList.add('hidden');
-    // }
-
-    // document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-    //     window.location.href = deleteUrl;
-    // });
-
-
     // Llama a la función al cargar la página por si hay algún checkbox preseleccionado
     toggleButtons();
-    delEmployeeModal();
     closeModal();
 });

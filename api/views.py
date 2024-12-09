@@ -8,7 +8,6 @@ from django.http.response import HttpResponse as HttpResponse
 from django.views import View
 from .models import Employees, Areas, Articles, Events, LineInvs, Proyects, Specialties, Students, LevelStudies, Unities, DetArticles, DetEvents, DetInvestigations, DetProyects, TypeEvents, TypeProyects, Categories
 import json
-from django.views.generic.edit import DeleteView
 from django.urls import reverse_lazy
 
 # Vista para la ruta de Urls.py de api
@@ -91,8 +90,8 @@ class EmployeeView(View):
                 country=country,
                 startDate=startDate,
                 endDate=endDate,
-                area=area,  # Asignar instancia del área
-                studies=studies  # Asignar instancia del nivel de estudios
+                area=area,  # Agregar instancia del área
+                studies=studies  # Agregar instancia del nivel de estudios
             )
         return redirect('/employees/')
 
@@ -141,12 +140,12 @@ class EmployeeView(View):
         employee.save()
         return redirect('/employees/')
 
-class EmployeeDeleteView(DeleteView):
-    model = Employees
-    employees = Employees.objects.all()
-    success_url = reverse_lazy('employees_list')
-    template_name = 'employees/employee.html'
-
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        employee_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        employee = get_object_or_404(Employees, id=employee_id)
+        employee.delete()
+        return redirect('/employees/')  # Redirige a la lista de empleados
 
 ################ API Class Studies #################////
 class StudiesView(View):
@@ -162,7 +161,7 @@ class StudiesView(View):
             'studies': studies
         }
 
-        return render(request, 'studies.html', context)
+        return render(request, 'studies/studies.html', context)
 
     def post(self, request):
         # Cargamos el cuerpo del request en una variable
@@ -175,7 +174,7 @@ class StudiesView(View):
 
         # Convertimos en un objeto la variable
         LevelStudies.objects.create(name=jd['name'],
-                               specialty_id=specialities.id)
+                            specialty_id=specialities.id)
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
@@ -242,11 +241,11 @@ class SpecialtyView(View):
             specialty.save()
         return redirect('/specialty/')
 
-class SpecialtyDeleteView(DeleteView):
-    model = Specialties
-    specialties = Specialties.objects.all()
-    success_url = reverse_lazy('specialty_list')
-    template_name = 'specialties/specialty.html'
+    def delete(self, request, *args, **kwargs):
+        specialty_id = kwargs.get('id')
+        specialty = get_object_or_404(Specialties, id=specialty_id)
+        specialty.delete()
+        return redirect('/specialty/')
 
 ################ API Class Student ################////
 class StudentView(View):
@@ -349,14 +348,12 @@ class StudentView(View):
         student.save()
         return redirect('/students/')
 
-    def delete(self, request, id):
-        students = list(Students.objects.filter(id=id).values())
-        if len(students) > 0:
-            Students.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an student to save."}
-        return JsonResponse(datos)
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        student_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        employee = get_object_or_404(Students, id=student_id)
+        employee.delete()
+        return redirect('/students/')  # Redirige a la lista de empleados
 
 ################ API Class Unities ################////
 class UnitiesView(View):
@@ -412,14 +409,12 @@ class UnitiesView(View):
             unity.save()
         return redirect('/unities/')
 
-    # def delete(self, request, id):
-    #     unities = list(Unities.objects.filter(id=id).values())
-    #     if len(unities) > 0:
-    #         Unities.objects.filter(id=id).delete()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an unity to save."}
-    #     return JsonResponse(datos)
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        unity_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        unity = get_object_or_404(Unities, id=unity_id)
+        unity.delete()
+        return redirect('/unities/')
 
 ################ API Class Area ################////
 class AreaView(View):
@@ -429,68 +424,69 @@ class AreaView(View):
 
     def get(self, request, id = 0):
         areas = Areas.objects.all()
+        area = get_object_or_404(Areas, id=id) if id else None
+
         unities = Unities.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'areas': areas,
+            'area': area,
             'unities': unities,
         }
 
         return render(request, 'areas/areas.html', context)
 
-    def post(self, request):
+    def post(self, request, id=0):
         # Cargamos el cuerpo del request en una variable
-        jd = request.POST
+        principal = request.POST.get('principal')
+        name = request.POST.get('name')
+        unities_id = request.POST.get('unities_id')
 
-        # Try-Catch para filtrar los IDs de la tabla
-        # Buscamos la instancia de unities
-        # Instanciamos en una variable todo el objeto y ponemos el valor del id en el jd
-        try:
-            unities = Unities.objects.get(id=jd['unities_id'])
-        except Unities.DoesNotExist:
-            return JsonResponse({'message': "Unities not found"}, status=404)
+        if id:
+            return self.put(request, id)
+        else:
+            # Try-Catch para filtrar los IDs de la tabla
+            # Buscamos la instancia de unities
+            # Instanciamos en una variable todo el objeto y ponemos el valor del id en el jd
+            try:
+                unities = Unities.objects.get(id=unities_id)
+            except Unities.DoesNotExist:
+                return JsonResponse({'message': "Unities not found"}, status=404)
 
-        # Convertimos en un objeto la variable
-        # Se tiene que pasar el .id para que sea el valor de la columna
-        Areas.objects.create(principal=jd['principal'],
-                            name=jd['name'],
-                            unities_id=unities.id)
+            # Convertimos en un objeto la variable
+            # Se tiene que pasar el .id para que sea el valor de la columna
+            Areas.objects.create(
+                principal=principal,
+                name=name,
+                unities=unities
+            )
         return redirect('/areas/')
 
-    # def put(self, request, id):
-    #     jd = json.loads(request.body)
-    #     areas = list(Area.objects.filter(id=id).values())
-    #     if len(areas) > 0:
-    #         area = Area.objects.get(id=id)
-    #         area.principal = jd.get('principal', area.principal)
-    #         area.name = jd.get('name', area.name)  # Usar el nombre proporcionado o mantener el actual
-    #         # Cada FK de cada tabla se instancia de la siguiente manera.
-    #         unities_id = jd.get('unities_id')
+    def put(self, request, id):
+        area = get_object_or_404(Areas, id=id)
 
-    #         # Condicional con Try-Catch para verificar si la variable tiene contenido
-    #         if unities_id is not None:
-    #             try:
-    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-    #                 unities = Unities.objects.get(id=unities_id)
-    #                 area.unities = unities
-    #             except Unities.DoesNotExist:
-    #                 return JsonResponse({'message': "Unities not found"}, status=404)
+        principal = request.POST.get('principal')
+        name = request.POST.get('name')
+        unities_id = request.POST.get('unities_id')
 
-    #         area.save()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an area to save."}
-    #     return JsonResponse(datos)
+        unities = None
+        if unities_id:
+            unities = get_object_or_404(Unities, id=unities_id)
 
-    def delete(self, request, id = 0):
-        areas = list(Areas.objects.filter(id=id).values())
-        if len(areas) > 0:
-            Areas.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an area to save."}
-        return JsonResponse(datos)
+        if principal: area.principal = principal
+        if name: area.name = name
+        if unities: area.unities = unities
+
+        area.save()
+        return redirect('/areas/')
+
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        area_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        area = get_object_or_404(Areas, id=area_id)
+        area.delete()
+        return redirect('/areas/')
 
 ################ API Class Proyect ################////
 class ProyectView(View):
@@ -500,68 +496,79 @@ class ProyectView(View):
 
     def get(self, request, id = 0):
         proyects = Proyects.objects.all()
+        proyect = get_object_or_404(Proyects, id=id) if id else None
+
         typeP = TypeProyects.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'proyects': proyects,
+            'proyect': proyect,
             'typeProyect': typeP,
         }
 
         return render(request, 'proyects/proyects.html', context)
 
-    def post(self, request):
-        # Cargamos el cuerpo del request en una variable
-        jd = request.POST
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        areaKnowledge = request.POST.get('areaKnowledge')
+        place = request.POST.get('place')
+        typeProyect_id = request.POST.get('typeProyect_id')
 
-        try:
-            typeProyect = TypeProyects.objects.get(id=jd['typeProyect_id'])
-        except TypeProyects.DoesNotExist:
-            return JsonResponse({'message': "TypeProyect not found"}, status=404)
+        if id:
+            return self.put(request, id)
+        else:
+            # Try-Catch para filtrar los IDs de la tabla
+            # Buscamos la instancia de unities
+            # Instanciamos en una variable todo el objeto y ponemos el valor del id en el jd
+            try:
+                typeProyect = TypeProyects.objects.get(id=typeProyect_id)
+            except TypeProyects.DoesNotExist:
+                return JsonResponse({'message': "TypeProyect not found"}, status=404)
 
         # Convertimos en un objeto la variable
-        Proyects.objects.create(name=jd['name'],
-                                startDate=jd['startDate'],
-                                endDate=jd['endDate'],
-                                areaKnowledge=jd['areaKnowledge'],
-                                place=jd['place'],
-                                typeProyect_id=typeProyect.id)
+        Proyects.objects.create(
+                name=name,
+                startDate=startDate,
+                endDate=endDate,
+                areaKnowledge=areaKnowledge,
+                place=place,
+                typeProyect=typeProyect,
+            )
         return redirect('/proyects/')
 
-    # def put(self, request, id):
-    #     jd = json.loads(request.body)
-    #     proyects = list(Proyects.objects.filter(id=id).values())
-    #     if len(proyects) > 0:
-    #         proyect = Proyects.objects.get(id=id)
-    #         proyect.name = jd['name']
-    #         proyect.startDate = jd['startDate']
-    #         proyect.endDate = jd['endDate']
-    #         proyect.areaKnowledge = jd['areaKnowledge']
-    #         proyect.place = jd['place']
-    #         typeProyect_id = jd.get('typeProyect_id')
+    def put(self, request, id):
+        proyect = get_object_or_404(Proyects, id=id)
 
-    #         if typeProyect_id is not None:
-    #             try:
-    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-    #                 typeProyect = TypeProyect.objects.get(id=jd['typeProyect_id'])
-    #                 proyect.typeProyect = typeProyect
-    #             except TypeProyect.DoesNotExist:
-    #                 return JsonResponse({'message': "TypeProyect not found"}, status=404)
+        name= request.POST.get('name')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        areaKnowledge = request.POST.get('areaKnowledge')
+        place = request.POST.get('place')
+        typeProyect_id = request.POST.get('typeProyect_id')
 
-    #         proyect.save()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an proyect to save."}
-    #     return JsonResponse(datos)
+        typeProyect = None
+        if typeProyect_id:
+            typeProyect = get_object_or_404(TypeProyects, id=typeProyect_id)
 
-    def delete(self, request, id = 0):
-        proyects = list(Proyects.objects.filter(id=id).values())
-        if len(proyects) > 0:
-            Proyects.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an proyect to save."}
-        return JsonResponse(datos)
+        if name: proyect.name = name
+        if startDate: proyect.startDate = startDate
+        if endDate: proyect.endDate = endDate
+        if areaKnowledge: proyect.areaKnowledge = areaKnowledge
+        if place: proyect.place = place
+        if typeProyect: proyect.typeProyect = typeProyect
+
+        proyect.save()
+        return redirect('/proyects/')
+
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        proyect_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        proyect = get_object_or_404(Proyects, id=proyect_id)
+        proyect.delete()
+        return redirect('/proyects/')
 
 ################ API Class Events ################////
 class EventView(View):
@@ -571,66 +578,71 @@ class EventView(View):
 
     def get(self, request, id = 0):
         events = Events.objects.all()
+        event = get_object_or_404(Events, id=id) if id else None
+
         typeE = TypeEvents.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'events': events,
+            'event': event,
             'typeEvent': typeE,
         }
 
         return render(request, 'events/events.html', context)
 
-    def post(self, request):
-        # Cargamos el cuerpo del request en una variable
-        jd = request.POST
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        place = request.POST.get('place')
+        typeEvent_id = request.POST.get('typeEvent_id')
 
-        try:
-            typeEvent = TypeEvents.objects.get(id=jd['typeEvent_id'])
-        except TypeEvents.DoesNotExist:
-            return JsonResponse({'message': "TypeEvent not found"}, status=404)
+        if id:
+            return self.put(request, id)
+        else:
+            try:
+                typeEvent = TypeEvents.objects.get(id=typeEvent_id)
+            except TypeEvents.DoesNotExist:
+                return JsonResponse({'message': "TypeEvent not found"}, status=404)
 
-        # Convertimos en un objeto la variable
-        Events.objects.create(name=jd['name'],
-                                startDate=jd['startDate'],
-                                endDate=jd['endDate'],
-                                place=jd['place'],
-                                typeEvent_id=typeEvent.id)
+            # Convertimos en un objeto la variable
+            Events.objects.create(
+                name=name,
+                startDate=startDate,
+                endDate=endDate,
+                place=place,
+                typeEvent=typeEvent
+            )
         return redirect('/events/')
 
-    # def put(self, request, id):
-    #     jd = json.loads(request.body)
-    #     events = list(Events.objects.filter(id=id).values())
-    #     if len(events) > 0:
-    #         event = Events.objects.get(id=id)
-    #         event.name = jd['name']
-    #         event.startDate = jd['startDate']
-    #         event.endDate = jd['endDate']
-    #         event.place = jd['place']
-    #         typeEvent_id = jd.get('typeEvent_id')
+    def put(self, request, id):
+        event = get_object_or_404(Events, id=id)
 
-    #         if typeEvent_id is not None:
-    #             try:
-    #                 # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-    #                 typeEvent = TypeEvent.objects.get(id=jd['typeEvent_id'])
-    #                 event.typeEvent = typeEvent
-    #             except TypeEvent.DoesNotExist:
-    #                 return JsonResponse({'message': "TypeEvent not found"}, status=404)
+        name = request.POST.get('name')
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        place = request.POST.get('place')
+        typeEvent_id = request.POST.get('typeEvent_id')
 
-    #         event.save()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an event to save."}
-    #     return JsonResponse(datos)
+        typeEvent = None
+        if typeEvent_id:
+            typeEvent = get_object_or_404(TypeEvents, id=typeEvent_id)
 
-    def delete(self, request, id = 0):
-        events = list(Events.objects.filter(id=id).values())
-        if len(events) > 0:
-            Events.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an event to save."}
-        return JsonResponse(datos)
+        if name: event.name = name
+        if startDate: event.startDate = startDate
+        if endDate: event.endDate = endDate
+        if place: event.place = place
+        if typeEvent: event.typeEvent = typeEvent
+        event.save()
+        return redirect('/events/')
+
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        event_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        event = get_object_or_404(Events, id=event_id)
+        event.delete()
+        return redirect('/events/')
 
 ################ API Class LineInv ################////
 class LineInvView(View):
@@ -669,6 +681,13 @@ class LineInvView(View):
             lineinv.save()
         return redirect('/lineinvs/')
 
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        lineinvs_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        lineinv = get_object_or_404(LineInvs, id=lineinvs_id)
+        lineinv.delete()
+        return redirect('/lineinvs/')
+
 ################ API Class Articles ################////
 class ArticlesView(View):
     @method_decorator(csrf_exempt)
@@ -677,76 +696,91 @@ class ArticlesView(View):
 
     def get(self, request, id = 0):
         articles = Articles.objects.all()
+        article = get_object_or_404(Articles, id=id) if id else None
+        categories = Categories.objects.all()
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'articles': articles
+            'articles': articles,
+            'article': article,
+            'categories': categories
         }
 
-        return render(request, 'articles.html', context)
+        return render(request, 'articles/articles.html', context)
 
-    def post(self, request):
-        # Cargamos el cuerpo del request en una variable
-        jd = json.loads(request.body)
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        doi = request.POST.get('doi')
+        url = request.POST.get('url')
+        year = request.POST.get('year')
+        magazine = request.POST.get('magazine')
+        jcr = request.POST.get('jcr')
+        impact = request.POST.get('impact')
+        datePublish = request.POST.get('datePublish')
+        countryPublish = request.POST.get('countryPublish')
+        categories_id = request.POST.get('categories_id')
 
-        try:
-            category = Categories.objects.get(id=jd['categories_id'])
-        except Categories.DoesNotExist:
-            return JsonResponse({'message': "Categories not found"}, status=404)
+        if id:
+            return self.put(request, id)
+        else:
+            try:
+                category = Categories.objects.get(id=categories_id)
+            except Categories.DoesNotExist:
+                return JsonResponse({'message': "Categories not found"}, status=404)
 
-        # Convertimos en un objeto la variable
-        Articles.objects.create(name=jd['name'],
-                                doi=jd['doi'],
-                                url=jd['url'],
-                                year=jd['year'],
-                                magazine=jd['magazine'],
-                                jcr=jd['jcr'],
-                                impact=jd['impact'],
-                                datePublish=jd['datePublish'],
-                                countryPublish=jd['countryPublish'],
-                                categories_id=category.id)
-
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+            # Convertimos en un objeto la variable
+            Articles.objects.create(
+                name=name,
+                doi=doi,
+                url=url,
+                year=year,
+                magazine=magazine,
+                jcr=jcr,
+                impact=impact,
+                datePublish=datePublish,
+                countryPublish=countryPublish,
+                categories=category
+            )
+        return redirect('/articles/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        articles = list(Articles.objects.filter(id=id).values())
-        if len(articles) > 0:
-            article = Articles.objects.get(id=id)
-            article.name = jd['name']
-            article.doi = jd['doi']
-            article.url = jd['url']
-            article.year = jd['year']
-            article.magazine = jd['magazine']
-            article.jcr = jd['jcr']
-            article.impact = jd['impact']
-            article.datePublish = jd['datePublish']
-            article.countryPublish = jd['countryPublish']
-            categories_id = jd.get('categories_id')
+        article = get_object_or_404(Articles, id=id)
 
-            if categories_id is not None:
-                try:
-                    # Traemos el objeto de Unities(FK) para poder determinar la edición de la variable
-                    categories = Categories.objects.get(id=jd['categories_id'])
-                    article.categories = categories
-                except Categories.DoesNotExist:
-                    return JsonResponse({'message': "Category not found"}, status=404)
+        name = request.POST.get('name')
+        doi = request.POST.get('doi')
+        url = request.POST.get('url')
+        year = request.POST.get('year')
+        magazine = request.POST.get('magazine')
+        jcr = request.POST.get('jcr')
+        impact = request.POST.get('impact')
+        datePublish = request.POST.get('datePublish')
+        countryPublish = request.POST.get('countryPublish')
+        categories_id = request.POST.get('categories_id')
 
-            article.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+        categories = None
+        if categories_id:
+            categories = get_object_or_404(Categories, id=categories_id)
 
-    def delete(self, request, id = 0):
-        articles = list(Articles.objects.filter(id=id).values())
-        if len(articles) > 0:
-            Articles.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+        if name: article.name = name
+        if doi: article.doi = doi
+        if url: article.url = url
+        if year: article.year = year
+        if magazine: article.magazine = magazine
+        if jcr: article.jcr = jcr
+        if impact: article.impact = impact
+        if datePublish: article.datePublish = datePublish
+        if countryPublish: article.countryPublish = countryPublish
+        if categories: article.categories = categories
+
+        article.save()
+        return redirect('/articles/')
+
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        article_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        article = get_object_or_404(Articles, id=article_id)
+        article.delete()
+        return redirect('/articles/')
 
 #### CRUD de las tablas intermedias ####
 class DetArticleView(View):
@@ -838,14 +872,12 @@ class TypeProyectView(View):
             typeP.save()
         return redirect('/typeProyect/')
 
-    # def delete(self, request, id = 0):
-    #     typeProyect = list(TypeProyect.objects.filter(id=id).values())
-    #     if len(typeProyect) > 0:
-    #         TypeProyect.objects.filter(id=id).delete()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an article to save."}
-    #     return JsonResponse(datos)
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        typeProyect_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        typeProyect = get_object_or_404(TypeProyects, id=typeProyect_id)
+        typeProyect.delete()
+        return redirect('/typeProyect/')
 
 class TypeEventView(View):
     @method_decorator(csrf_exempt)
@@ -880,14 +912,12 @@ class TypeEventView(View):
             typeE.save()
         return redirect('/typeEvent/')
 
-    # def delete(self, request, id = 0):
-    #     typeEvent = list(TypeEvent.objects.filter(id=id).values())
-    #     if len(typeEvent) > 0:
-    #         TypeEvent.objects.filter(id=id).delete()
-    #         datos = {'message': "Success"}
-    #     else:
-    #         datos = {'message': "There is not an article to save."}
-    #     return JsonResponse(datos)
+    def delete(self, request, *args, **kwargs):
+        # Lógica para eliminar el empleado
+        typeEvent_id = kwargs.get('id')  # Obtienes el ID del empleado desde kwargs
+        typeEvent = get_object_or_404(TypeEvents, id=typeEvent_id)
+        typeEvent.delete()
+        return redirect('/typeEvent/')
 
 class CategoriesView(View):
     @method_decorator(csrf_exempt)
@@ -896,37 +926,29 @@ class CategoriesView(View):
 
     def get(self, request, id = 0):
         categories = Categories.objects.all()
+        categoriesid = get_object_or_404(Categories, id=id) if id else None
+
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
-            'categories': categories
+            'categories': categories, # GET
+            'categoriesid': categoriesid # PUT
         }
 
-        return render(request, 'categories.html', context)
+        return render(request, 'categories/categories.html', context)
 
-    def post(self, request):
-        jd = json.loads(request.body)
-        Categories.objects.create(name=jd['name'])
-        datos = {'message': "Success"}
-        return JsonResponse(datos)
+    def post(self, request, id=0):
+        name = request.POST.get('name')
+        if id:
+            return self.put(request, id)
+        else:
+            Categories.objects.create(name=name)
+            return redirect('/categories/')
 
     def put(self, request, id):
-        jd = json.loads(request.body)
-        category = list(Categories.objects.filter(id=id).values())
-        if len(category) > 0:
-            category = Categories.objects.get(id=id)
-            category.name = jd['name']
-            category.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
-
-    def delete(self, request, id = 0):
-        category = list(Categories.objects.filter(id=id).values())
-        if len(category) > 0:
-            Categories.objects.filter(id=id).delete()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "There is not an article to save."}
-        return JsonResponse(datos)
+        categoriesid = get_object_or_404(Categories, id=id)
+        name = request.POST.get('name')
+        if name:
+            categoriesid.name = name
+            categoriesid.save()
+        return redirect('/categories/')

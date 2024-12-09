@@ -52,8 +52,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
-    const checkboxes = document.querySelectorAll('.employee-checkbox');
-    const deleteForm = document.getElementById('delete-form');
+    const checkboxes = document.querySelectorAll('.event-checkbox');
+    let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
     function toggleButtons() {
@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
         checkboxes.forEach(function(checkbox) {
             if (checkbox.checked) {
                 anyChecked = true;
+                selectedId = checkbox.value;
             }
         });
 
@@ -74,50 +75,110 @@ document.addEventListener("DOMContentLoaded", function() {
             delEventButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
             editEventButton.disabled = true;
             delEventButton.disabled = true;
+            selectedId = null;
         }
+    }
+
+    // Función para redirigir a la URL de edición
+    function redirectToEdit() {
+        if (selectedId) {
+            window.location.href = `/events/${selectedId}/edit/`;
+        }
+    }
+
+    // Función para mostrar el modal
+    function showModal() {
+        document.getElementById('popup-modal').classList.remove('hidden');
+    }
+
+    // Función para ocultar el modal
+    function hideModal() {
+        document.getElementById('popup-modal').classList.add('hidden');
+    }
+
+    // Función para eliminar el empleado
+    function deleteEvent() {
+        if (selectedId) {
+            fetch(`/events/${selectedId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken // Obtén el token CSRF del contexto de Django
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Eliminar la fila del empleado de la tabla
+                    document.querySelector(`#event-row-${selectedId}`).remove();
+                    hideModal();
+                    window.location.reload();
+                } else {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    // Añadir event listener al botón de eliminación
+    delEventButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        showModal();
+    });
+
+    // Añadir event listener al botón de confirmación de eliminación
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    confirmDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        deleteEvent();
+    });
+
+    // Añadir event listener al botón de cancelación de eliminación
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    cancelDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        hideModal();
+    });
+
+    // Obtener el token CSRF del contexto de Django
+    const csrfToken = '{{ csrf_token }}';
+
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
+
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const eventTableContainer = document.getElementById("eventTable");
+        const editEventForm = document.getElementById("editEventForm");
+
+        eventTableContainer.style.display = "none"; // Oculta la tabla
+        paginationEvent.style.display = "none"; // Oculta la paginación
+        editEventForm.hidden = false; // Muestra el formulario de edición
     }
 
     // Añadir event listeners a todos los checkboxes
+    // Función para que solamente esté un checkbox seleccionado a la vez.
     checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', toggleButtons);
-    });
-
-    delEventButton.addEventListener('click', function() {
-        let selectedEmployeeId = null;
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedEmployeeId = checkbox.value;
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Deselecciona todos los demás checkboxes
+                checkboxes.forEach(function(otherCheckbox) {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
             }
+            toggleButtons();
         });
-
-        if (selectedEmployeeId) {
-            delEmployeeModal(selectedEmployeeId);
-        }
     });
 
-    let deleteUrl = '';
-
-    function delEmployeeModal(employeeId) {
-        // Muestra el modal
-        const modal = document.getElementById('popup-modal');
-        modal.classList.remove('hidden');
-
-        // Configura la URL de eliminación
-        deleteUrl = `/employees/${employeeId}/delete/`;
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('popup-modal');
-        modal.classList.add('hidden');
-    }
-
-    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-        window.location.href = deleteUrl;
+    editEventButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToEdit();
     });
 
+    editCancelButtonEvent.addEventListener("click", function() {
+        window.location.href = "/events/";
+    });
 
     // Llama a la función al cargar la página por si hay algún checkbox preseleccionado
     toggleButtons();
-    delEmployeeModal();
     closeModal();
 });

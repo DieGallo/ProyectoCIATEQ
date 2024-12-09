@@ -52,15 +52,17 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Eventos para las interacciones de los botones de Editar - Eliminar
-    const checkboxes = document.querySelectorAll('.employee-checkbox');
-    const deleteForm = document.getElementById('delete-form');
+    const checkboxes = document.querySelectorAll('.proyect-checkbox');
+    let selectedId = null;
 
     // Función para habilitar/deshabilitar los botones
     function toggleButtons() {
         let anyChecked = false;
+
         checkboxes.forEach(function(checkbox) {
             if (checkbox.checked) {
                 anyChecked = true;
+                selectedId = checkbox.value;
             }
         });
 
@@ -74,14 +76,111 @@ document.addEventListener("DOMContentLoaded", function() {
             delProyectButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
             editProyectButton.disabled = true;
             delProyectButton.disabled = true;
+            selectedId = null;
         }
     }
 
-    // Añadir event listeners a todos los checkboxes
-    checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', toggleButtons);
+    // Función para redirigir a la URL de edición
+    function redirectToEdit() {
+        if (selectedId) {
+            window.location.href = `/proyects/${selectedId}/edit/`;
+        }
+    }
+
+    // Función para mostrar el modal
+    function showModal() {
+        document.getElementById('popup-modal').classList.remove('hidden');
+    }
+
+    // Función para ocultar el modal
+    function hideModal() {
+        document.getElementById('popup-modal').classList.add('hidden');
+    }
+
+    // Función para eliminar el empleado
+    function deleteProyect() {
+        if (selectedId) {
+            fetch(`/proyects/${selectedId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken // Obtén el token CSRF del contexto de Django
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Eliminar la fila del empleado de la tabla
+                    document.querySelector(`#proyect-row-${selectedId}`).remove();
+                    hideModal();
+                    window.location.reload();
+                } else {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    // Añadir event listener al botón de eliminación
+    delProyectButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        showModal();
     });
 
+    // Añadir event listener al botón de confirmación de eliminación
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    confirmDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        deleteProyect();
+    });
+
+    // Añadir event listener al botón de cancelación de eliminación
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    cancelDeleteButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        hideModal();
+    });
+
+    // Obtener el token CSRF del contexto de Django
+    const csrfToken = '{{ csrf_token }}';
+
+    // Verificar la URL actual
+    const currentURLEdit = window.location.href;
+
+    // Ocultar la tabla si la URL contiene '/edit/'
+    if (currentURLEdit.includes('/edit/')) {
+        const proyectTableContainer = document.getElementById("proyectTable");
+        const editProyectFormContainer = document.getElementById("editProyectForm");
+
+        proyectTableContainer.style.display = "none"; // Oculta la tabla
+        paginationProyect.style.display = "none"; // Oculta la paginación
+        editProyectFormContainer.hidden = false; // Muestra el formulario de edición
+    }
+
+    // Añadir event listeners a todos los checkboxes
+    // Función para que solamente esté un checkbox seleccionado a la vez.
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Deselecciona todos los demás checkboxes
+                checkboxes.forEach(function(otherCheckbox) {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
+            }
+            toggleButtons();
+        });
+    });
+
+
+    editProyectButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        redirectToEdit();
+    });
+
+    editCancelButtonProyect.addEventListener("click", function() {
+        window.location.href = "/proyects/";
+    });
+
+    // --------------------------------- DELETE --------------------------------
     delProyectButton.addEventListener('click', function() {
         let selectedEmployeeId = null;
         checkboxes.forEach(function(checkbox) {
