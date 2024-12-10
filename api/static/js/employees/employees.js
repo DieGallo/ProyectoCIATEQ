@@ -20,7 +20,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Variable de la paginación de Empleados
     const paginationEmployee = document.getElementById("paginationEmployee");
 
+    // Tabs
     const tabsEmployee = document.getElementById("tabsEmployee");
+    const dashboardEmployee = document.getElementById("dashboard");
+    const articlesEmployee = document.getElementById("articles");
+    const lineinvsEmployee = document.getElementById("lineInvs");
+    const studentsEmployee = document.getElementById("students");
+    const profileEmployee = document.getElementById("profile");
 
     // Interacción del botón y formulario de Agregar Empleado
     addEmployeeButton.addEventListener("click", function() {
@@ -75,11 +81,19 @@ document.addEventListener("DOMContentLoaded", function() {
         if (anyChecked) {
             editEmployeeButton.className = 'focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800';
             delEmployeeButton.className = 'focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800';
+            dashboardEmployee.className = "focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800";
+            articlesEmployee.className = "focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800";
+            lineinvsEmployee.className = "focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800";
+            studentsEmployee.className = "focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-4 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800";
             editEmployeeButton.disabled = false;
             delEmployeeButton.disabled = false;
         } else {
             editEmployeeButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400 cursor-not-allowed dark:text-gray-500';
             delEmployeeButton.className = 'font-medium text-sm px-5 py-2.5 me-2 mb-4 inline-block p-4 text-gray-400  cursor-not-allowed dark:text-gray-500';
+            dashboardEmployee.className = "inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500";
+            articlesEmployee.className = "inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500";
+            lineinvsEmployee.className = "inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500";
+            studentsEmployee.className = "inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500";
             editEmployeeButton.disabled = true;
             delEmployeeButton.disabled = true;
             selectedId = null;
