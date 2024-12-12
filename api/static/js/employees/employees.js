@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function() {
         employeeTableContainer.style.display = "none";
         paginationEmployee.style.display = "none";
         tabsEmployee.style.display = "none";
+        profileEmployee.style.display = "none";
         addEmployeeFormContainer.style.display = "block";
     });
 

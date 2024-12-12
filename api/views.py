@@ -2,13 +2,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.base import RedirectView
 from django.http import JsonResponse
 from django.http.response import HttpResponse as HttpResponse
 from django.views import View
 from .models import Employees, Areas, Articles, Events, LineInvs, Proyects, Specialties, Students, LevelStudies, Unities, DetArticles, DetEvents, DetInvestigations, DetProyects, TypeEvents, TypeProyects, Categories
 import json
-from django.urls import reverse_lazy
 
 # Vista para la ruta de Urls.py de api
 def home(request):
@@ -30,15 +28,24 @@ class EmployeeView(View):
         employees = Employees.objects.all()
         employee = get_object_or_404(Employees, id=id) if id else None
 
+        print(f"id; {employee}")
+
+        detLineInv = DetInvestigations.objects.filter(workers_id=employee).select_related('research') if id else []
+
         # Cuando se tienen FK se tienen que instaciar los datos en get para los combobox
         area = Areas.objects.all()
         studies = LevelStudies.objects.all()
+
+        for employee1 in employees:
+            print(f"Employee: {employee1}")
+            print(f"detLineInv: {list(detLineInv)}")
 
         # Condicionales para determinar si se tienen empleados
         ## Lee solamente un sólo empleado
         context = {
             'employees': employees,
             'employee': employee,
+            'detLineInv': detLineInv,
 
             # Traemos los datos de las FK
             # Cuando se recarge la página el dato aparezca los combobox
